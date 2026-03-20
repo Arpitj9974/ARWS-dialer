@@ -6,13 +6,9 @@ import com.arws.hrcalltracker.db.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * SyncManager — Handles sending pending calls from local SQLite database to Google Sheets.
- *
- * It pulls all pending calls from the database. If internet is available,
- * it tries to send them one by one. If successful, it deletes the call from the DB.
  */
 class SyncManager(private val context: Context) {
 
@@ -24,10 +20,6 @@ class SyncManager(private val context: Context) {
     private val apiService = ApiService()
     private val prefs = PrefsManager(context)
 
-    /**
-     * Trigger a sync of all pending calls stored locally.
-     * Runs on the IO coroutine dispatcher safely in the background.
-     */
     fun syncPendingCalls() {
         val scriptUrl = prefs.getScriptUrl()
         val hrName = prefs.getHrName()
@@ -55,6 +47,7 @@ class SyncManager(private val context: Context) {
                 Log.d(TAG, "🔄 Found ${pendingCalls.size} pending calls. Starting sync...")
 
                 for (call in pendingCalls) {
+                    Log.d(TAG, "📡 Sending data for ${call.phoneNumber} to GAS...")
                     val success = apiService.sendCallDataSync(
                         scriptUrl = scriptUrl,
                         hrName = hrName,
@@ -67,13 +60,11 @@ class SyncManager(private val context: Context) {
                     )
 
                     if (success) {
-                        // Data successfully sent -> delete from local DB
                         db.callDao().deleteCall(call.id)
-                        Log.d(TAG, "✅ Call ID ${call.id} synced and removed from database.")
+                        Log.d(TAG, "✅ Sync Success: ${call.phoneNumber}")
                     } else {
-                        Log.e(TAG, "❌ Failed to sync Call ID ${call.id}. Will retry later.")
-                        // If one fails, we might still be having network issues. Break out to retry later.
-                        break
+                        Log.e(TAG, "❌ Sync Failed for ${call.phoneNumber}. Response was false.")
+                        break // Stop and retry later
                     }
                 }
             } catch (e: Exception) {

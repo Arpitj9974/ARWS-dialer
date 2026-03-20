@@ -1,4 +1,0 @@
-com.arws.hrcalltracker.test.app-androidTest-0 D:\AJDF\ARWS dialer\HRCallTracker\app\build\generated\res\resValues\androidTest\debug
-com.arws.hrcalltracker.test.app-mergeDebugAndroidTestResources-1 D:\AJDF\ARWS dialer\HRCallTracker\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\merged.dir
-com.arws.hrcalltracker.test.app-mergeDebugAndroidTestResources-2 D:\AJDF\ARWS dialer\HRCallTracker\app\build\intermediates\incremental\debugAndroidTest\mergeDebugAndroidTestResources\stripped.dir
-com.arws.hrcalltracker.test.app-merged_res-3 D:\AJDF\ARWS dialer\HRCallTracker\app\build\intermediates\merged_res\debugAndroidTest
