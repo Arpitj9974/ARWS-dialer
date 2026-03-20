@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#10B981</color>
+    <color name="amber_500">#F59E0B</color>
+    <color name="background">#0F172A</color>
+    <color name="bg_slate_700">#334155</color>
+    <color name="bg_slate_800">#1E293B</color>
+    <color name="bg_slate_900">#0F172A</color>
+    <color name="border_slate">#1E293B</color>
+    <color name="emerald_500">#10B981</color>
+    <color name="glass_white_10">#1AFFFFFF</color>
+    <color name="glass_white_20">#33FFFFFF</color>
+    <color name="indigo_500">#6366F1</color>
+    <color name="indigo_600">#4F46E5</color>
+    <color name="primary">#6366F1</color>
+    <color name="primary_dark">#0F172A</color>
+    <color name="rose_500">#F43F5E</color>
+    <color name="text_slate_300">#CBD5E1</color>
+    <color name="text_slate_400">#94A3B8</color>
+    <color name="text_slate_50">#F8FAFC</color>
+    <color name="text_slate_700">#334155</color>
+    <string name="app_name">HR Call Tracker</string>
+    <string name="btn_continue">Continue</string>
+    <string name="btn_save">Save &amp; Continue</string>
+    <string name="hint_employee_id">Employee ID (Optional)</string>
+    <string name="hint_hr_name">HR Name *</string>
+    <string name="label_hr_name">HR Name</string>
+    <string name="label_selected_sim">Selected SIM</string>
+    <string name="label_status">Status</string>
+    <string name="login_subtitle">Sign in to start tracking</string>
+    <string name="sim_selection_subtitle">Choose the SIM card used for official company calls</string>
+    <string name="sim_selection_title">Select Company SIM</string>
+    <string name="status_active">Call Tracking Active</string>
+    <string name="status_inactive">Call Tracking Inactive</string>
+    <style name="Theme.HRCallTracker" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:statusBarColor">@color/primary_dark</item>
+        <item name="android:windowBackground">@color/background</item>
+    </style>
+</resources>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HR Call Tracker</string>
+
+    <!-- Login Screen -->
+    <string name="login_subtitle">Sign in to start tracking</string>
+    <string name="hint_hr_name">HR Name *</string>
+    <string name="hint_employee_id">Employee ID (Optional)</string>
+    <string name="btn_continue">Continue</string>
+
+    <!-- SIM Selection Screen -->
+    <string name="sim_selection_title">Select Company SIM</string>
+    <string name="sim_selection_subtitle">Choose the SIM card used for official company calls</string>
+    <string name="btn_save">Save &amp; Continue</string>
+
+    <!-- Dashboard Screen -->
+    <string name="label_hr_name">HR Name</string>
+    <string name="label_selected_sim">Selected SIM</string>
+    <string name="label_status">Status</string>
+    <string name="status_active">Call Tracking Active</string>
+    <string name="status_inactive">Call Tracking Inactive</string>
+</resources>

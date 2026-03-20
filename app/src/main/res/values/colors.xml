@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Premium Dark Theme Palette -->
+    <color name="bg_slate_900">#0F172A</color> <!-- Main Background -->
+    <color name="bg_slate_800">#1E293B</color> <!-- Card Background -->
+    <color name="bg_slate_700">#334155</color> <!-- Lighter Slate -->
+    
+    <color name="indigo_500">#6366F1</color>  <!-- Primary Accent -->
+    <color name="indigo_600">#4F46E5</color>
+    
+    <color name="emerald_500">#10B981</color> <!-- Success/Active -->
+    <color name="rose_500">#F43F5E</color>    <!-- Error/Stop -->
+    <color name="amber_500">#F59E0B</color>   <!-- Warning/Pending -->
+    <color name="text_slate_300">#CBD5E1</color> <!-- Lighter Gray Text -->
+    
+    
+    <color name="text_slate_50">#F8FAFC</color>  <!-- Main White Text -->
+    <color name="text_slate_400">#94A3B8</color> <!-- Secondary Gray Text -->
+    <color name="text_slate_700">#334155</color> <!-- Darker Text/Label -->
+    
+    <!-- Glassmorphic Utils -->
+    <color name="glass_white_10">#1AFFFFFF</color>
+    <color name="glass_white_20">#33FFFFFF</color>
+    <color name="border_slate">#1E293B</color>
+
+    <!-- Legacy Compatibility (Optional) -->
+    <color name="primary">#6366F1</color>
+    <color name="primary_dark">#0F172A</color>
+    <color name="accent">#10B981</color>
+    <color name="background">#0F172A</color>
+</resources>
