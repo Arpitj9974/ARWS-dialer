@@ -3211,7 +3211,6 @@ id btnEdit
 id btnEditConfig
 id btnLogin
 id btnLogout
-id btnLogoutHr
 id btnRequestPerms
 id btnSaveSetup
 id btnSaveSim
@@ -3338,7 +3337,6 @@ id graph_wrap
 id group_divider
 id grouping
 id groups
-id headerBg
 id header_title
 id hide_ime_id
 id hideable
@@ -3612,7 +3610,6 @@ id triangle
 id tvAdminTitle
 id tvAppTitle
 id tvEmployeeId
-id tvEmployeeIdLabel
 id tvHrName
 id tvHrNameValue
 id tvLastScanTime

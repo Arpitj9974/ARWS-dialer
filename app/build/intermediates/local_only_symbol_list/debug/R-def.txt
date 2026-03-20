@@ -35,7 +35,6 @@ id btnEdit
 id btnEditConfig
 id btnLogin
 id btnLogout
-id btnLogoutHr
 id btnRequestPerms
 id btnSaveSetup
 id btnSaveSim
@@ -53,7 +52,6 @@ id etPassword
 id etScriptUrl
 id etUsername
 id fabAdd
-id headerBg
 id ivLogo
 id ivSimIcon
 id rgSimCards
@@ -61,7 +59,6 @@ id rvAccounts
 id tvAdminTitle
 id tvAppTitle
 id tvEmployeeId
-id tvEmployeeIdLabel
 id tvHrName
 id tvHrNameValue
 id tvLastScanTime
