@@ -19,32 +19,29 @@ class ApiService {
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
-        .followRedirects(false) // Handle redirects manually to preserve POST body
+        .followRedirects(false)
         .followSslRedirects(false)
         .build()
 
     fun sendCallDataSync(
         scriptUrl: String,
         hrName: String,
-        employeeId: String,
         phoneNumber: String,
         callType: String,
         duration: String,
-        date: String,
+        date: String, // dd/MM/yyyy
+        time: String, // HH:mm:ss
         simName: String
     ): Boolean {
-        if (scriptUrl.isEmpty()) {
-            Log.e(TAG, "❌ Cannot send data: Script URL is empty.")
-            return false
-        }
+        if (scriptUrl.isEmpty()) return false
 
         val json = JSONObject().apply {
             put("hr_name", hrName)
-            put("employee_id", employeeId)
             put("phone_number", phoneNumber)
             put("call_type", callType)
             put("duration", duration)
             put("date", date)
+            put("time", time)
             put("sim", simName)
         }
 
@@ -64,44 +61,31 @@ class ApiService {
                 .build()
 
             var nextUrl: String? = null
-            var finalSuccess = false
-
             try {
                 client.newCall(request).execute().use { response ->
                     val code = response.code
                     val location = response.header("Location")
                     val body = response.body?.string() ?: ""
 
-                    Log.d(TAG, "📡 URL: $currentUrl -> Code: $code")
-
                     if (code in 300..399 && location != null) {
-                        Log.d(TAG, "↪️ Redirecting to: $location")
                         nextUrl = location
                     } else if (response.isSuccessful) {
-                        Log.d(TAG, "✅ Success: $body")
-                        finalSuccess = body.contains("success")
-                        return finalSuccess
+                        return body.contains("success")
                     } else {
-                        Log.e(TAG, "❌ Server Error ($code): $body")
                         return false
                     }
                 }
                 
-                // If the .use block finished and we have a nextUrl, loop again
                 if (nextUrl != null) {
                     currentUrl = nextUrl!!
                     attempts++
                 } else {
-                    return finalSuccess
+                    return false
                 }
-
             } catch (e: Exception) {
-                Log.e(TAG, "❌ Network error: ${e.message}")
                 return false
             }
         }
-
-        Log.e(TAG, "❌ Too many redirects")
         return false
     }
 }

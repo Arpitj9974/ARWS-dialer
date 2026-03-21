@@ -23,52 +23,34 @@ class SyncManager(private val context: Context) {
     fun syncPendingCalls() {
         val scriptUrl = prefs.getScriptUrl()
         val hrName = prefs.getHrName()
-        val empId = prefs.getEmployeeId()
 
-        if (scriptUrl.isEmpty()) {
-            Log.e(TAG, "⚠️ No Script URL configured. Sync deferred.")
-            return
-        }
-
-        if (!NetworkUtils.isInternetAvailable(context)) {
-            Log.d(TAG, "📶 No internet connection. Sync deferred. Calls are safe locally.")
-            return
-        }
+        if (scriptUrl.isEmpty()) return
+        if (!NetworkUtils.isInternetAvailable(context)) return
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val pendingCalls = db.callDao().getPendingCalls()
 
-                if (pendingCalls.isEmpty()) {
-                    Log.d(TAG, "✅ No pending calls to sync.")
-                    return@launch
-                }
-
-                Log.d(TAG, "🔄 Found ${pendingCalls.size} pending calls. Starting sync...")
-
                 for (call in pendingCalls) {
-                    Log.d(TAG, "📡 Sending data for ${call.phoneNumber} to GAS...")
                     val success = apiService.sendCallDataSync(
                         scriptUrl = scriptUrl,
                         hrName = hrName,
-                        employeeId = empId,
                         phoneNumber = call.phoneNumber,
                         callType = call.callType,
                         duration = call.duration,
                         date = call.date,
+                        time = call.time,
                         simName = call.simName
                     )
 
                     if (success) {
                         db.callDao().deleteCall(call.id)
-                        Log.d(TAG, "✅ Sync Success: ${call.phoneNumber}")
                     } else {
-                        Log.e(TAG, "❌ Sync Failed for ${call.phoneNumber}. Response was false.")
-                        break // Stop and retry later
+                        break 
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error during sync: ${e.message}", e)
+                Log.e(TAG, "Error during sync: ${e.message}")
             }
         }
     }

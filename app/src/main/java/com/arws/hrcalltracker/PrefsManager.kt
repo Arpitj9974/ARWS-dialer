@@ -12,13 +12,11 @@ class PrefsManager(context: Context) {
     companion object {
         private const val PREFS_NAME = "hr_call_tracker_prefs"
         private const val KEY_HR_NAME = "hr_name"
-        private const val KEY_EMPLOYEE_ID = "employee_id"
         private const val KEY_COMPANY_SIM_ID = "company_sim_id"
         private const val KEY_COMPANY_SIM_NAME = "company_sim_name"
         private const val KEY_SETUP_COMPLETE = "setup_complete"
         private const val KEY_LAST_UPLOADED_TIMESTAMP = "last_uploaded_timestamp"
         private const val KEY_SCRIPT_URL = "script_url"
-        private const val KEY_USER_NAME = "user_name"
     }
 
     private val prefs: SharedPreferences =
@@ -40,15 +38,6 @@ class PrefsManager(context: Context) {
 
     fun getHrName(): String {
         return prefs.getString(KEY_HR_NAME, "") ?: ""
-    }
-
-    // --- Employee ID ---
-    fun saveEmployeeId(id: String) {
-        prefs.edit().putString(KEY_EMPLOYEE_ID, id).apply()
-    }
-
-    fun getEmployeeId(): String {
-        return prefs.getString(KEY_EMPLOYEE_ID, "") ?: ""
     }
 
     // --- Company SIM Subscription ID ---

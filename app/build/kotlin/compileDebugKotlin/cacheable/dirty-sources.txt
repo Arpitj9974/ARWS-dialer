@@ -1,0 +1,14 @@
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\db\CallDao.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\db\CallEntity.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\CallTrackingService.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\ApiService.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\SetupActivity.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\SyncManager.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\BootReceiver.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\PeriodicSyncWorker.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\NetworkUtils.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\db\AppDatabase.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\CallLogHelper.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\PrefsManager.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\DashboardActivity.kt
+D:\AJDF\ARWS dialer\HRCallTracker\app\src\main\java\com\arws\hrcalltracker\db\HRAccount.kt

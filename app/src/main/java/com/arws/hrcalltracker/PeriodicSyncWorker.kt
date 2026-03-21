@@ -11,8 +11,6 @@ import kotlinx.coroutines.withContext
 
 /**
  * Periodic Sync Worker
- * Periodically wakes up, scans the call log for new calls,
- * saves matching calls to the local Room database, and triggers a sync.
  */
 class PeriodicSyncWorker(
     private val context: Context,
@@ -25,78 +23,54 @@ class PeriodicSyncWorker(
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        Log.d(TAG, "Starting periodic call log scan...")
-        
         val prefs = PrefsManager(context)
         val callLogHelper = CallLogHelper(context)
         val db = AppDatabase.getDatabase(context)
 
-        // 1. Check if setup is complete and script URL is available
         if (!prefs.isSetupComplete() || prefs.getScriptUrl().isEmpty()) {
-            Log.w(TAG, "Setup incomplete or Script URL missing. Aborting sync.")
             return@withContext Result.failure()
         }
 
-        // 2. Get last scan timestamp (default to 1 day ago)
         val lastScanTime = prefs.getLastUploadedTimestamp()
         val scanSince = if (lastScanTime == 0L) {
-            System.currentTimeMillis() - 24 * 60 * 60 * 1000L // 1 day ago
+            System.currentTimeMillis() - 24 * 60 * 60 * 1000L
         } else {
             lastScanTime
         }
 
-        // 3. Scan the new calls
         val newCalls = callLogHelper.scanCallsSince(scanSince)
-        Log.d(TAG, "Found ${newCalls.size} new calls to process since $scanSince")
-
         val companySimId = prefs.getCompanySimId()
         val companySimName = prefs.getCompanySimName()
         var maxScannedTimestamp = lastScanTime
 
-        // 4. Process and filter calls
         for (call in newCalls) {
-            // Update max timestamp
-            if (call.date > maxScannedTimestamp) {
-                maxScannedTimestamp = call.date
+            if (call.dateMillis > maxScannedTimestamp) {
+                maxScannedTimestamp = call.dateMillis
             }
 
-            // SIM Filtering
             if (call.subscriptionId == companySimId) {
-                Log.d(TAG, "Matching Company SIM Call: ${call.phoneNumber} (${call.duration} sec)")
-
-                // Unique ID: number_date_duration
-                val uniqueCallId = "${call.phoneNumber}_${call.date}_${call.duration}"
-
-                // Check for duplicates
+                val uniqueCallId = "${call.phoneNumber}_${call.dateMillis}_${call.duration}"
                 val exists = db.callDao().checkExists(uniqueCallId)
                 if (exists == 0) {
                     val entity = CallEntity(
-                        hrName = prefs.getHrName(),
                         phoneNumber = call.phoneNumber,
                         callType = call.callType,
                         duration = call.duration,
-                        date = call.formattedDate,
+                        date = call.date,
+                        time = call.time,
                         simName = companySimName,
                         uniqueCallId = uniqueCallId
                     )
-                    val insertedId = db.callDao().insertCall(entity)
-                    Log.d(TAG, "Saved matching call to DB (Row $insertedId)")
-                } else {
-                    Log.d(TAG, "Call already exists in DB, skipping.")
+                    db.callDao().insertCall(entity)
                 }
-            } else {
-                Log.d(TAG, "Ignored call from different SIM (${call.subscriptionId})")
             }
         }
 
-        // 5. Update last scan time
         prefs.saveLastUploadedTimestamp(maxScannedTimestamp)
         
-        // 6. Trigger a sync to Google Apps Script
         val syncManager = SyncManager(context)
         syncManager.syncPendingCalls()
 
-        Log.d(TAG, "Periodic scan completed.")
         return@withContext Result.success()
     }
 }

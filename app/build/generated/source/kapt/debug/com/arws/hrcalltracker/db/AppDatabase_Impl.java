@@ -29,12 +29,12 @@ public final class AppDatabase_Impl extends AppDatabase {
   @Override
   @NonNull
   protected SupportSQLiteOpenHelper createOpenHelper(@NonNull final DatabaseConfiguration config) {
-    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(1) {
+    final SupportSQLiteOpenHelper.Callback _openCallback = new RoomOpenHelper(config, new RoomOpenHelper.Delegate(2) {
       @Override
       public void createAllTables(@NonNull final SupportSQLiteDatabase db) {
-        db.execSQL("CREATE TABLE IF NOT EXISTS `pending_calls` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `hrName` TEXT NOT NULL, `phoneNumber` TEXT NOT NULL, `callType` TEXT NOT NULL, `duration` TEXT NOT NULL, `date` TEXT NOT NULL, `simName` TEXT NOT NULL, `uniqueCallId` TEXT NOT NULL)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS `pending_calls` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `phoneNumber` TEXT NOT NULL, `callType` TEXT NOT NULL, `duration` TEXT NOT NULL, `date` TEXT NOT NULL, `time` TEXT NOT NULL, `simName` TEXT NOT NULL, `uniqueCallId` TEXT NOT NULL)");
         db.execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)");
-        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '90dc205a03776645ad3e9f577038a412')");
+        db.execSQL("INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fe18fbb77213c6419a2f05d91a9c20a5')");
       }
 
       @Override
@@ -85,11 +85,11 @@ public final class AppDatabase_Impl extends AppDatabase {
           @NonNull final SupportSQLiteDatabase db) {
         final HashMap<String, TableInfo.Column> _columnsPendingCalls = new HashMap<String, TableInfo.Column>(8);
         _columnsPendingCalls.put("id", new TableInfo.Column("id", "INTEGER", true, 1, null, TableInfo.CREATED_FROM_ENTITY));
-        _columnsPendingCalls.put("hrName", new TableInfo.Column("hrName", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsPendingCalls.put("phoneNumber", new TableInfo.Column("phoneNumber", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsPendingCalls.put("callType", new TableInfo.Column("callType", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsPendingCalls.put("duration", new TableInfo.Column("duration", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsPendingCalls.put("date", new TableInfo.Column("date", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
+        _columnsPendingCalls.put("time", new TableInfo.Column("time", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsPendingCalls.put("simName", new TableInfo.Column("simName", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         _columnsPendingCalls.put("uniqueCallId", new TableInfo.Column("uniqueCallId", "TEXT", true, 0, null, TableInfo.CREATED_FROM_ENTITY));
         final HashSet<TableInfo.ForeignKey> _foreignKeysPendingCalls = new HashSet<TableInfo.ForeignKey>(0);
@@ -103,7 +103,7 @@ public final class AppDatabase_Impl extends AppDatabase {
         }
         return new RoomOpenHelper.ValidationResult(true, null);
       }
-    }, "90dc205a03776645ad3e9f577038a412", "81330b58992d0628175507b6fc6dd78c");
+    }, "fe18fbb77213c6419a2f05d91a9c20a5", "1b4f086d17f2dcafe8cdc21f111fa507");
     final SupportSQLiteOpenHelper.Configuration _sqliteConfig = SupportSQLiteOpenHelper.Configuration.builder(config.context).name(config.name).callback(_openCallback).build();
     final SupportSQLiteOpenHelper _helper = config.sqliteOpenHelperFactory.create(_sqliteConfig);
     return _helper;

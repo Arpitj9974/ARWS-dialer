@@ -7,9 +7,8 @@ import androidx.room.RoomDatabase
 
 /**
  * AppDatabase — Room Database instance for HR Call Tracker.
- * Manages the SQLite database that holds pending offline calls.
  */
-@Database(entities = [CallEntity::class], version = 1, exportSchema = false)
+@Database(entities = [CallEntity::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun callDao(): CallDao
@@ -24,7 +23,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "hr_call_tracker_db"
-                ).build()
+                )
+                .fallbackToDestructiveMigration() // Simple for development to reset schema
+                .build()
                 INSTANCE = instance
                 instance
             }

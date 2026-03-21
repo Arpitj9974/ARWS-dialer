@@ -42,37 +42,37 @@ public final class CallDao_Impl implements CallDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR IGNORE INTO `pending_calls` (`id`,`hrName`,`phoneNumber`,`callType`,`duration`,`date`,`simName`,`uniqueCallId`) VALUES (nullif(?, 0),?,?,?,?,?,?,?)";
+        return "INSERT OR IGNORE INTO `pending_calls` (`id`,`phoneNumber`,`callType`,`duration`,`date`,`time`,`simName`,`uniqueCallId`) VALUES (nullif(?, 0),?,?,?,?,?,?,?)";
       }
 
       @Override
       protected void bind(@NonNull final SupportSQLiteStatement statement,
           @NonNull final CallEntity entity) {
         statement.bindLong(1, entity.getId());
-        if (entity.getHrName() == null) {
+        if (entity.getPhoneNumber() == null) {
           statement.bindNull(2);
         } else {
-          statement.bindString(2, entity.getHrName());
-        }
-        if (entity.getPhoneNumber() == null) {
-          statement.bindNull(3);
-        } else {
-          statement.bindString(3, entity.getPhoneNumber());
+          statement.bindString(2, entity.getPhoneNumber());
         }
         if (entity.getCallType() == null) {
-          statement.bindNull(4);
+          statement.bindNull(3);
         } else {
-          statement.bindString(4, entity.getCallType());
+          statement.bindString(3, entity.getCallType());
         }
         if (entity.getDuration() == null) {
-          statement.bindNull(5);
+          statement.bindNull(4);
         } else {
-          statement.bindString(5, entity.getDuration());
+          statement.bindString(4, entity.getDuration());
         }
         if (entity.getDate() == null) {
+          statement.bindNull(5);
+        } else {
+          statement.bindString(5, entity.getDate());
+        }
+        if (entity.getTime() == null) {
           statement.bindNull(6);
         } else {
-          statement.bindString(6, entity.getDate());
+          statement.bindString(6, entity.getTime());
         }
         if (entity.getSimName() == null) {
           statement.bindNull(7);
@@ -141,7 +141,7 @@ public final class CallDao_Impl implements CallDao {
 
   @Override
   public Object getPendingCalls(final Continuation<? super List<CallEntity>> $completion) {
-    final String _sql = "SELECT * FROM pending_calls ORDER BY date ASC";
+    final String _sql = "SELECT * FROM pending_calls ORDER BY id ASC";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     final CancellationSignal _cancellationSignal = DBUtil.createCancellationSignal();
     return CoroutinesRoom.execute(__db, false, _cancellationSignal, new Callable<List<CallEntity>>() {
@@ -151,11 +151,11 @@ public final class CallDao_Impl implements CallDao {
         final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
         try {
           final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
-          final int _cursorIndexOfHrName = CursorUtil.getColumnIndexOrThrow(_cursor, "hrName");
           final int _cursorIndexOfPhoneNumber = CursorUtil.getColumnIndexOrThrow(_cursor, "phoneNumber");
           final int _cursorIndexOfCallType = CursorUtil.getColumnIndexOrThrow(_cursor, "callType");
           final int _cursorIndexOfDuration = CursorUtil.getColumnIndexOrThrow(_cursor, "duration");
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
+          final int _cursorIndexOfTime = CursorUtil.getColumnIndexOrThrow(_cursor, "time");
           final int _cursorIndexOfSimName = CursorUtil.getColumnIndexOrThrow(_cursor, "simName");
           final int _cursorIndexOfUniqueCallId = CursorUtil.getColumnIndexOrThrow(_cursor, "uniqueCallId");
           final List<CallEntity> _result = new ArrayList<CallEntity>(_cursor.getCount());
@@ -163,12 +163,6 @@ public final class CallDao_Impl implements CallDao {
             final CallEntity _item;
             final long _tmpId;
             _tmpId = _cursor.getLong(_cursorIndexOfId);
-            final String _tmpHrName;
-            if (_cursor.isNull(_cursorIndexOfHrName)) {
-              _tmpHrName = null;
-            } else {
-              _tmpHrName = _cursor.getString(_cursorIndexOfHrName);
-            }
             final String _tmpPhoneNumber;
             if (_cursor.isNull(_cursorIndexOfPhoneNumber)) {
               _tmpPhoneNumber = null;
@@ -193,6 +187,12 @@ public final class CallDao_Impl implements CallDao {
             } else {
               _tmpDate = _cursor.getString(_cursorIndexOfDate);
             }
+            final String _tmpTime;
+            if (_cursor.isNull(_cursorIndexOfTime)) {
+              _tmpTime = null;
+            } else {
+              _tmpTime = _cursor.getString(_cursorIndexOfTime);
+            }
             final String _tmpSimName;
             if (_cursor.isNull(_cursorIndexOfSimName)) {
               _tmpSimName = null;
@@ -205,7 +205,7 @@ public final class CallDao_Impl implements CallDao {
             } else {
               _tmpUniqueCallId = _cursor.getString(_cursorIndexOfUniqueCallId);
             }
-            _item = new CallEntity(_tmpId,_tmpHrName,_tmpPhoneNumber,_tmpCallType,_tmpDuration,_tmpDate,_tmpSimName,_tmpUniqueCallId);
+            _item = new CallEntity(_tmpId,_tmpPhoneNumber,_tmpCallType,_tmpDuration,_tmpDate,_tmpTime,_tmpSimName,_tmpUniqueCallId);
             _result.add(_item);
           }
           return _result;
@@ -219,7 +219,7 @@ public final class CallDao_Impl implements CallDao {
 
   @Override
   public LiveData<List<CallEntity>> getPendingCallsLiveData() {
-    final String _sql = "SELECT * FROM pending_calls ORDER BY date ASC";
+    final String _sql = "SELECT * FROM pending_calls ORDER BY id ASC";
     final RoomSQLiteQuery _statement = RoomSQLiteQuery.acquire(_sql, 0);
     return __db.getInvalidationTracker().createLiveData(new String[] {"pending_calls"}, false, new Callable<List<CallEntity>>() {
       @Override
@@ -228,11 +228,11 @@ public final class CallDao_Impl implements CallDao {
         final Cursor _cursor = DBUtil.query(__db, _statement, false, null);
         try {
           final int _cursorIndexOfId = CursorUtil.getColumnIndexOrThrow(_cursor, "id");
-          final int _cursorIndexOfHrName = CursorUtil.getColumnIndexOrThrow(_cursor, "hrName");
           final int _cursorIndexOfPhoneNumber = CursorUtil.getColumnIndexOrThrow(_cursor, "phoneNumber");
           final int _cursorIndexOfCallType = CursorUtil.getColumnIndexOrThrow(_cursor, "callType");
           final int _cursorIndexOfDuration = CursorUtil.getColumnIndexOrThrow(_cursor, "duration");
           final int _cursorIndexOfDate = CursorUtil.getColumnIndexOrThrow(_cursor, "date");
+          final int _cursorIndexOfTime = CursorUtil.getColumnIndexOrThrow(_cursor, "time");
           final int _cursorIndexOfSimName = CursorUtil.getColumnIndexOrThrow(_cursor, "simName");
           final int _cursorIndexOfUniqueCallId = CursorUtil.getColumnIndexOrThrow(_cursor, "uniqueCallId");
           final List<CallEntity> _result = new ArrayList<CallEntity>(_cursor.getCount());
@@ -240,12 +240,6 @@ public final class CallDao_Impl implements CallDao {
             final CallEntity _item;
             final long _tmpId;
             _tmpId = _cursor.getLong(_cursorIndexOfId);
-            final String _tmpHrName;
-            if (_cursor.isNull(_cursorIndexOfHrName)) {
-              _tmpHrName = null;
-            } else {
-              _tmpHrName = _cursor.getString(_cursorIndexOfHrName);
-            }
             final String _tmpPhoneNumber;
             if (_cursor.isNull(_cursorIndexOfPhoneNumber)) {
               _tmpPhoneNumber = null;
@@ -270,6 +264,12 @@ public final class CallDao_Impl implements CallDao {
             } else {
               _tmpDate = _cursor.getString(_cursorIndexOfDate);
             }
+            final String _tmpTime;
+            if (_cursor.isNull(_cursorIndexOfTime)) {
+              _tmpTime = null;
+            } else {
+              _tmpTime = _cursor.getString(_cursorIndexOfTime);
+            }
             final String _tmpSimName;
             if (_cursor.isNull(_cursorIndexOfSimName)) {
               _tmpSimName = null;
@@ -282,7 +282,7 @@ public final class CallDao_Impl implements CallDao {
             } else {
               _tmpUniqueCallId = _cursor.getString(_cursorIndexOfUniqueCallId);
             }
-            _item = new CallEntity(_tmpId,_tmpHrName,_tmpPhoneNumber,_tmpCallType,_tmpDuration,_tmpDate,_tmpSimName,_tmpUniqueCallId);
+            _item = new CallEntity(_tmpId,_tmpPhoneNumber,_tmpCallType,_tmpDuration,_tmpDate,_tmpTime,_tmpSimName,_tmpUniqueCallId);
             _result.add(_item);
           }
           return _result;
