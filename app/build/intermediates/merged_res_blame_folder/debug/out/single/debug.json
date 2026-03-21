@@ -20,6 +20,10 @@
         "source": "com.arws.hrcalltracker.app-main-40:/drawable/circle_glow_indigo.xml"
     },
     {
+        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_bg_success_box.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-40:/drawable/bg_success_box.xml"
+    },
+    {
         "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_activity_login.xml.flat",
         "source": "com.arws.hrcalltracker.app-main-40:/layout/activity_login.xml"
     },
@@ -38,6 +42,10 @@
     {
         "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_circle_glow_light.xml.flat",
         "source": "com.arws.hrcalltracker.app-main-40:/drawable/circle_glow_light.xml"
+    },
+    {
+        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_bg_spinner_border.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-40:/drawable/bg_spinner_border.xml"
     },
     {
         "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_activity_dashboard.xml.flat",

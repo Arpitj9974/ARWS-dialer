@@ -1,24 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Premium Dark Theme Palette -->
-    <color name="bg_slate_900">#0F172A</color> <!-- Main Background -->
-    <color name="bg_slate_800">#1E293B</color> <!-- Card Background -->
-    <color name="bg_slate_700">#334155</color> <!-- Lighter Slate -->
+    <!-- Premium Dark Theme Palette (Deprecating) -->
+    <color name="bg_slate_900">#0F172A</color>
+    <color name="bg_slate_800">#1E293B</color>
+    <color name="bg_slate_700">#334155</color>
     
-    <color name="indigo_500">#6366F1</color>  <!-- Primary Accent -->
-    <color name="indigo_600">#4F46E5</color>
+    <!-- Light Theme Palette (New UI) -->
+    <color name="primary_blue">#1967D2</color>       <!-- Main button/toolbar color -->
+    <color name="surface_white">#FFFFFF</color>      <!-- Card backgrounds -->
+    <color name="bg_light_gray">#F8F9FA</color>      <!-- Main activity background -->
     
-    <color name="emerald_500">#10B981</color> <!-- Success/Active -->
-    <color name="rose_500">#F43F5E</color>    <!-- Error/Stop -->
-    <color name="amber_500">#F59E0B</color>   <!-- Warning/Pending -->
-    <color name="text_slate_300">#CBD5E1</color> <!-- Lighter Gray Text -->
+    <color name="success_green_bg">#E6F4EA</color>   <!-- Light green box -->
+    <color name="success_green_text">#137333</color> <!-- Dark green text for box -->
+    <color name="status_green">#34A853</color>       <!-- Checkmark green -->
+    <color name="amber_warning">#F9AB00</color>      <!-- Warning/Pending -->
     
+    <color name="text_primary">#202124</color>       <!-- Main dark text -->
+    <color name="text_secondary">#5F6368</color>     <!-- Helper/subtitle text -->
+    <color name="border_gray">#DADCE0</color>        <!-- Input/Card borders -->
     
-    <color name="text_slate_50">#F8FAFC</color>  <!-- Main White Text -->
-    <color name="text_slate_400">#94A3B8</color> <!-- Secondary Gray Text -->
-    <color name="text_slate_700">#334155</color> <!-- Darker Text/Label -->
+    <!-- Legacy colors for safety -->
+    <color name="indigo_500">#1967D2</color>  
+    <color name="indigo_600">#1967D2</color>
+    <color name="emerald_500">#34A853</color> 
+    <color name="rose_500">#EA4335</color>    
+    <color name="amber_500">#F9AB00</color>   
+    <color name="text_slate_300">#5F6368</color> 
+    <color name="text_slate_50">#FFFFFF</color>  
+    <color name="text_slate_400">#5F6368</color> 
+    <color name="text_slate_700">#202124</color> 
     
-    <!-- Glassmorphic Utils -->
+    <!-- Glassmorphic Utils (Deprecated) -->
     <color name="glass_white_10">#1AFFFFFF</color>
     <color name="glass_white_20">#33FFFFFF</color>
     <color name="border_slate">#1E293B</color>

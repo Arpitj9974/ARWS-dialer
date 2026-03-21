@@ -1,33 +1,28 @@
 package com.arws.hrcalltracker
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.Observer
 import androidx.work.*
 import com.arws.hrcalltracker.db.AppDatabase
-import java.text.SimpleDateFormat
-import java.util.*
+import com.google.android.material.button.MaterialButton
 import java.util.concurrent.TimeUnit
 
 class DashboardActivity : AppCompatActivity() {
 
     private lateinit var prefs: PrefsManager
-    private lateinit var tvHrName: TextView
-    private lateinit var tvSimInfo: TextView
-    private lateinit var tvUrlStatus: TextView
-    private lateinit var tvStatus: TextView
-    private lateinit var tvPendingCount: TextView
+    private lateinit var tvSimNameValue: TextView
+    private lateinit var tvScriptUrlText: TextView
     private lateinit var tvLastScanTime: TextView
-    private lateinit var btnSyncNow: Button
-    private lateinit var btnEditSetup: View
+    private lateinit var tvPendingCount: TextView
+    private lateinit var btnSyncNow: MaterialButton
+    private lateinit var btnEditConfig: MaterialButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,15 +30,17 @@ class DashboardActivity : AppCompatActivity() {
 
         prefs = PrefsManager(this)
 
-        // Initialize Views
-        tvHrName = findViewById(R.id.tvHrNameValue)
-        tvSimInfo = findViewById(R.id.tvSimNameValue)
-        tvUrlStatus = findViewById(R.id.tvStatusValue) // Just using existing status field for now
-        tvStatus = findViewById(R.id.tvStatusValue)
-        tvPendingCount = findViewById(R.id.tvPendingCount)
+        // Setup Toolbar
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        // Bind Views
+        tvSimNameValue = findViewById(R.id.tvSimNameValue)
+        tvScriptUrlText = findViewById(R.id.tvScriptUrlText)
         tvLastScanTime = findViewById(R.id.tvLastScanTime)
+        tvPendingCount = findViewById(R.id.tvPendingCount)
         btnSyncNow = findViewById(R.id.btnSyncNow)
-        btnEditSetup = findViewById(R.id.btnEditConfig)
+        btnEditConfig = findViewById(R.id.btnEditConfig)
 
         setupUI()
         setupObservers()
@@ -51,22 +48,17 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        val hrName = prefs.getHrName()
-        tvHrName.text = if (hrName.isNotEmpty()) hrName else "HR Tracker"
-        
         val simName = prefs.getCompanySimName()
-        tvSimInfo.text = "Tracking: $simName"
-
-        tvStatus.text = "PERIODIC SCAN ACTIVE"
-        tvStatus.setTextColor(ContextCompat.getColor(this, R.color.emerald_500))
-        val pulse = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.pulse)
-        tvStatus.startAnimation(pulse)
+        tvSimNameValue.text = if (simName.isNotEmpty()) simName else "Not Selected"
+        
+        val url = prefs.getScriptUrl()
+        tvScriptUrlText.text = if (url.isNotEmpty()) url else "Not Configured"
 
         btnSyncNow.setOnClickListener {
             runManualSync()
         }
 
-        btnEditSetup.setOnClickListener {
+        btnEditConfig.setOnClickListener {
             val intent = Intent(this, SetupActivity::class.java)
             intent.putExtra("EDIT_MODE", true)
             startActivity(intent)
@@ -86,8 +78,20 @@ class DashboardActivity : AppCompatActivity() {
         if (lastScan == 0L) {
             tvLastScanTime.text = "Never"
         } else {
-            val sdf = SimpleDateFormat("HH:mm, MMM dd", Locale.getDefault())
-            tvLastScanTime.text = sdf.format(Date(lastScan))
+            val now = System.currentTimeMillis()
+            val timeDiff = now - lastScan
+            
+            // Format as "A few seconds ago", "5 minutes ago", etc.
+            val relativeTime = when {
+                timeDiff < DateUtils.MINUTE_IN_MILLIS -> "A few seconds ago"
+                else -> DateUtils.getRelativeTimeSpanString(
+                    lastScan,
+                    now,
+                    DateUtils.MINUTE_IN_MILLIS,
+                    DateUtils.FORMAT_ABBREV_RELATIVE
+                ).toString()
+            }
+            tvLastScanTime.text = relativeTime
         }
     }
 
@@ -112,10 +116,13 @@ class DashboardActivity : AppCompatActivity() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
+        
         val request = OneTimeWorkRequestBuilder<PeriodicSyncWorker>()
             .setConstraints(constraints)
             .build()
+            
         WorkManager.getInstance(this).enqueue(request)
+        
         WorkManager.getInstance(this).getWorkInfoByIdLiveData(request.id)
             .observe(this, Observer { info ->
                 if (info != null && info.state.isFinished) {

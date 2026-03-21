@@ -80,11 +80,15 @@ class ApiService {
 
         return try {
             client.newCall(request).execute().use { response ->
+                val responseBody = response.body?.string() ?: "Empty body"
                 if (response.isSuccessful) {
                     Log.d(TAG, "✅ Data sent successfully to $scriptUrl")
+                    Log.d(TAG, "Server Response: $responseBody")
                     true
                 } else {
                     Log.e(TAG, "❌ Server error: ${response.code} - ${response.message}")
+                    Log.e(TAG, "❌ Error Body: $responseBody")
+                    // Often GAS returns 200 OK with HTML error page if bad URL, we need to check the exact response to be sure.
                     false
                 }
             }

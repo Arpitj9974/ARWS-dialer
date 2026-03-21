@@ -9,11 +9,15 @@ import android.os.Bundle
 import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
 import android.view.View
-import android.widget.RadioButton
-import android.widget.RadioGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
@@ -24,12 +28,13 @@ class SetupActivity : AppCompatActivity() {
     private lateinit var prefs: PrefsManager
     private lateinit var etHrName: TextInputEditText
     private lateinit var etScriptUrl: TextInputEditText
-    private lateinit var rgSimCards: RadioGroup
+    private lateinit var spinnerSimCards: Spinner
     
-    private lateinit var tvPermCallLogStatus: TextView
-    private lateinit var tvPermPhoneStateStatus: TextView
+    private lateinit var llPermissionStatus: LinearLayout
+    private lateinit var ivPermissionIcon: ImageView
+    private lateinit var tvPermissionStatus: TextView
+    private lateinit var tvPermissionHelper: TextView
     private lateinit var btnRequestPerms: MaterialButton
-    private lateinit var btnDetectSims: MaterialButton
     private lateinit var btnSave: MaterialButton
 
     private var availableSims = mutableListOf<SubscriptionInfo>()
@@ -42,7 +47,8 @@ class SetupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         prefs = PrefsManager(this)
 
-        if (prefs.isSetupComplete() && !intent.getBooleanExtra("EDIT_MODE", false)) {
+        val isEditMode = intent.getBooleanExtra("EDIT_MODE", false)
+        if (prefs.isSetupComplete() && !isEditMode) {
             startActivity(Intent(this, DashboardActivity::class.java))
             finish()
             return
@@ -50,14 +56,30 @@ class SetupActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_setup)
 
+        // Setup Toolbar
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = ""
+        toolbar.setNavigationOnClickListener {
+            if (isEditMode) {
+                finish()
+            } else {
+                Toast.makeText(this, "Please complete setup.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         // Bind Views
         etHrName = findViewById(R.id.etHrName)
         etScriptUrl = findViewById(R.id.etScriptUrl)
-        rgSimCards = findViewById(R.id.rgSimCards)
-        tvPermCallLogStatus = findViewById(R.id.tvPermCallLogStatus)
-        tvPermPhoneStateStatus = findViewById(R.id.tvPermPhoneStateStatus)
+        spinnerSimCards = findViewById(R.id.spinnerSimCards)
+        
+        llPermissionStatus = findViewById(R.id.llPermissionStatus)
+        ivPermissionIcon = findViewById(R.id.ivPermissionIcon)
+        tvPermissionStatus = findViewById(R.id.tvPermissionStatus)
+        tvPermissionHelper = findViewById(R.id.tvPermissionHelper)
+        
         btnRequestPerms = findViewById(R.id.btnRequestPerms)
-        btnDetectSims = findViewById(R.id.btnDetectSims)
         btnSave = findViewById(R.id.btnSaveSetup)
 
         // Pre-fill
@@ -65,7 +87,6 @@ class SetupActivity : AppCompatActivity() {
         etScriptUrl.setText(prefs.getScriptUrl())
 
         btnRequestPerms.setOnClickListener { requestRequiredPermissions() }
-        btnDetectSims.setOnClickListener { loadSimCards() }
         btnSave.setOnClickListener { saveConfiguration() }
 
         updatePermissionStatus()
@@ -76,15 +97,25 @@ class SetupActivity : AppCompatActivity() {
         val hasCallLog = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED
         val hasPhoneState = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
 
-        tvPermCallLogStatus.text = if (hasCallLog) "GRANTED" else "PENDING"
-        tvPermCallLogStatus.setTextColor(ContextCompat.getColor(this, if (hasCallLog) R.color.emerald_500 else R.color.rose_500))
-
-        tvPermPhoneStateStatus.text = if (hasPhoneState) "GRANTED" else "PENDING"
-        tvPermPhoneStateStatus.setTextColor(ContextCompat.getColor(this, if (hasPhoneState) R.color.emerald_500 else R.color.rose_500))
-
         if (hasCallLog && hasPhoneState) {
+            // Granted State
+            llPermissionStatus.setBackgroundResource(R.drawable.bg_success_box)
+            ivPermissionIcon.setImageResource(android.R.drawable.checkbox_on_background)
+            ivPermissionIcon.setColorFilter(ContextCompat.getColor(this, R.color.status_green))
+            tvPermissionStatus.text = "All permissions granted!"
+            tvPermissionStatus.setTextColor(ContextCompat.getColor(this, R.color.success_green_text))
+            tvPermissionHelper.text = "Call Log & Phone State permissions have been granted."
+            
             btnRequestPerms.visibility = View.GONE
         } else {
+            // Pending State
+            llPermissionStatus.setBackgroundColor(ContextCompat.getColor(this, R.color.bg_light_gray))
+            ivPermissionIcon.setImageResource(android.R.drawable.ic_dialog_info)
+            ivPermissionIcon.setColorFilter(ContextCompat.getColor(this, R.color.amber_warning))
+            tvPermissionStatus.text = "Permissions Required"
+            tvPermissionStatus.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
+            tvPermissionHelper.text = "Please grant the necessary permissions to continue."
+            
             btnRequestPerms.visibility = View.VISIBLE
         }
     }
@@ -108,46 +139,47 @@ class SetupActivity : AppCompatActivity() {
             return
         }
 
-        rgSimCards.removeAllViews()
         val subscriptionManager = getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
         try {
             val list = subscriptionManager.activeSubscriptionInfoList
             availableSims.clear()
+            val simNames = mutableListOf<String>()
+            
             if (!list.isNullOrEmpty()) {
                 availableSims.addAll(list)
                 val savedId = prefs.getCompanySimId()
+                var selectedIndex = 0
 
                 list.forEachIndexed { index, info ->
-                    val rb = RadioButton(this)
-                    rb.id = View.generateViewId()
-                    rb.text = "${info.displayName} (SIM ${info.simSlotIndex + 1})"
-                    rb.setTextColor(ContextCompat.getColor(this, R.color.text_slate_50))
-                    rb.buttonTintList = android.content.res.ColorStateList.valueOf(ContextCompat.getColor(this, R.color.emerald_500))
-                    
-                    val params = RadioGroup.LayoutParams(RadioGroup.LayoutParams.MATCH_PARENT, RadioGroup.LayoutParams.WRAP_CONTENT)
-                    params.setMargins(0, 8, 0, 8)
-                    rb.layoutParams = params
-
-                    rgSimCards.addView(rb)
-
-                    if (info.subscriptionId == savedId || (savedId == -1 && index == 0)) {
-                        rgSimCards.check(rb.id)
-                        selectedSimId = info.subscriptionId
-                        selectedSimName = info.displayName.toString()
+                    simNames.add("SIM ${info.simSlotIndex + 1} - ${info.displayName}")
+                    if (info.subscriptionId == savedId) {
+                        selectedIndex = index
                     }
                 }
 
-                rgSimCards.setOnCheckedChangeListener { group, checkedId ->
-                    val checkedRb = group.findViewById<RadioButton>(checkedId)
-                    val index = group.indexOfChild(checkedRb)
-                    if (index != -1) {
-                        val info = availableSims[index]
+                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, simNames)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                spinnerSimCards.adapter = adapter
+                spinnerSimCards.setSelection(selectedIndex)
+
+                spinnerSimCards.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                        val info = availableSims[position]
                         selectedSimId = info.subscriptionId
                         selectedSimName = info.displayName.toString()
                     }
+                    override fun onNothingSelected(parent: AdapterView<*>?) {}
                 }
+                
+                // Set initial selection explicitly if the listener hasn't fired
+                if(availableSims.isNotEmpty()) {
+                    selectedSimId = availableSims[selectedIndex].subscriptionId
+                    selectedSimName = availableSims[selectedIndex].displayName.toString()
+                }
+
             } else {
-                Toast.makeText(this, "No active SIM detected", Toast.LENGTH_SHORT).show()
+                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listOf("No active SIM detected"))
+                spinnerSimCards.adapter = adapter
             }
         } catch (e: SecurityException) {
             Toast.makeText(this, "Phone state permission required to detect SIMs", Toast.LENGTH_SHORT).show()

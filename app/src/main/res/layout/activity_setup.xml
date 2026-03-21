@@ -1,207 +1,292 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_slate_900"
-    android:padding="24dp">
+    android:background="@color/bg_light_gray"
+    android:orientation="vertical"
+    tools:context=".SetupActivity">
 
-    <ScrollView
+    <!-- Custom AppBar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/surface_white"
+        android:elevation="4dp"
+        app:title=""
+        app:navigationIcon="?attr/homeAsUpIndicator">
+    </androidx.appcompat.widget.Toolbar>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="24dp"
+            android:paddingBottom="40dp">
 
+            <!-- Title Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="App Setup"
-                android:textColor="@color/text_slate_50"
-                android:textSize="26sp"
-                android:fontFamily="sans-serif-black" />
+                android:text="Setup HR Call Tracker"
+                android:textColor="@color/primary_blue"
+                android:textSize="24sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Configure tracking details for this device"
-                android:textColor="@color/text_slate_400"
+                android:layout_marginBottom="24dp"
+                android:text="Please configure the app to start tracking."
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
+            <!-- Card 1: Permissions -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                app:cardBackgroundColor="@color/bg_slate_800"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/surface_white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/glass_card"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Step 1: Grant Permissions"
-                        android:textColor="@color/text_slate_50"
+                        android:text="Permissions"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
 
+                    <!-- Status Box -->
                     <LinearLayout
+                        android:id="@+id/llPermissionStatus"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
+                        android:background="@drawable/bg_success_box"
+                        android:gravity="center_vertical"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:padding="12dp">
+
+                        <ImageView
+                            android:id="@+id/ivPermissionIcon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@android:drawable/checkbox_on_background"
+                            app:tint="@color/status_green" />
+
                         <TextView
-                            android:id="@+id/tvPermCallLog"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Read Call Log"
-                            android:textColor="@color/text_slate_300" />
-                        <TextView
-                            android:id="@+id/tvPermCallLogStatus"
+                            android:id="@+id/tvPermissionStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="PENDING"
-                            android:textColor="@color/rose_500"
+                            android:layout_marginStart="8dp"
+                            android:text="All permissions granted!"
+                            android:textColor="@color/success_green_text"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
                     </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-                        <TextView
-                            android:id="@+id/tvPermPhoneState"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Read Phone State"
-                            android:textColor="@color/text_slate_300" />
-                        <TextView
-                            android:id="@+id/tvPermPhoneStateStatus"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="PENDING"
-                            android:textColor="@color/rose_500"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
+                    
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRequestPerms"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:text="Request Permissions"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:textColor="@color/indigo_500"
-                        app:strokeColor="@color/indigo_500" />
+                        android:text="Grant Permissions"
+                        android:visibility="gone"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        app:rippleColor="@color/primary_blue"/>
 
-                    <View
+                    <TextView
+                        android:id="@+id/tvPermissionHelper"
                         android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="24dp"
-                        android:background="@color/bg_slate_700" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Call Log &amp; Phone State permissions have been granted."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Card 2: SIM Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/surface_white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Step 2: Configuration"
-                        android:textColor="@color/text_slate_50"
+                        android:text="Select SIM Card"
+                        android:textColor="@color/text_primary"
                         android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="16dp" />
+                        android:textStyle="bold" />
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    <!-- Spinner Container to draw border -->
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="HR Name (Optional)"
-                        android:textColorHint="@color/text_slate_400"
-                        app:boxStrokeColor="@color/indigo_500"
-                        app:hintTextColor="@color/indigo_500">
+                        android:layout_height="48dp"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/bg_spinner_border"
+                        android:paddingHorizontal="4dp">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etHrName"
+                        <Spinner
+                            android:id="@+id/spinnerSimCards"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textPersonName"
-                            android:textColor="@color/text_slate_50" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_height="match_parent"
+                            android:background="@null"
+                            android:dropDownWidth="match_parent"/>
+                    </LinearLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:hint="Google Apps Script URL (Required)"
-                        android:textColorHint="@color/text_slate_400"
-                        app:boxStrokeColor="@color/indigo_500"
-                        app:hintTextColor="@color/indigo_500">
+                        android:layout_marginTop="8dp"
+                        android:text="Select which SIM card to track calls for."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Card 3: Google Sheet Link -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="@color/surface_white"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Google Sheet Link"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="@color/border_gray"
+                        app:boxCornerRadiusTopStart="8dp"
+                        app:boxCornerRadiusTopEnd="8dp"
+                        app:boxCornerRadiusBottomStart="8dp"
+                        app:boxCornerRadiusBottomEnd="8dp"
+                        app:hintEnabled="false">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etScriptUrl"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:hint="https://script.google.com/macros/.../exec"
                             android:inputType="textUri"
-                            android:textColor="@color/text_slate_50"
-                            android:textColorHint="@color/text_slate_300" />
+                            android:padding="12dp"
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_secondary"
+                            android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Enter your Google Apps Script Web App URL."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="24dp"
-                        android:text="Select Active SIM to Track"
-                        android:textColor="@color/text_slate_50"
-                        android:textSize="16sp"
+                        android:layout_marginTop="16dp"
+                        android:text="HR Name (optional)"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
-                    <RadioGroup
-                        android:id="@+id/rgSimCards"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:orientation="vertical" />
-                        
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnDetectSims"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Detect SIMs"
-                        style="@style/Widget.MaterialComponents.Button.TextButton"
-                        android:textColor="@color/indigo_500" />
+                        app:boxBackgroundMode="outline"
+                        app:boxStrokeColor="@color/border_gray"
+                        app:boxCornerRadiusTopStart="8dp"
+                        app:boxCornerRadiusTopEnd="8dp"
+                        app:boxCornerRadiusBottomStart="8dp"
+                        app:boxCornerRadiusBottomEnd="8dp"
+                        app:hintEnabled="false">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etHrName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Enter your name"
+                            android:inputType="textPersonName"
+                            android:padding="12dp"
+                            android:textColor="@color/text_primary"
+                            android:textColorHint="@color/text_secondary"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSaveSetup"
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="32dp"
-                android:layout_marginBottom="24dp"
-                android:backgroundTint="@color/indigo_500"
-                android:text="Save &amp; Finish"
-                android:textAllCaps="false"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:cornerRadius="16dp" />
-
         </LinearLayout>
-    </ScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Save Button Pinned to Bottom -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/bg_light_gray"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="16dp"
+        android:elevation="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSaveSetup"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Save Setup"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            app:backgroundTint="@color/primary_blue"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
+
+</LinearLayout>
