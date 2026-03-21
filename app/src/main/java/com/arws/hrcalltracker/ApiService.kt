@@ -63,6 +63,9 @@ class ApiService {
                 .post(requestBody)
                 .build()
 
+            var nextUrl: String? = null
+            var finalSuccess = false
+
             try {
                 client.newCall(request).execute().use { response ->
                     val code = response.code
@@ -73,19 +76,25 @@ class ApiService {
 
                     if (code in 300..399 && location != null) {
                         Log.d(TAG, "↪️ Redirecting to: $location")
-                        currentUrl = location
-                        attempts++
-                        continue
-                    }
-
-                    if (response.isSuccessful) {
+                        nextUrl = location
+                    } else if (response.isSuccessful) {
                         Log.d(TAG, "✅ Success: $body")
-                        return body.contains("success")
+                        finalSuccess = body.contains("success")
+                        return finalSuccess
                     } else {
                         Log.e(TAG, "❌ Server Error ($code): $body")
                         return false
                     }
                 }
+                
+                // If the .use block finished and we have a nextUrl, loop again
+                if (nextUrl != null) {
+                    currentUrl = nextUrl!!
+                    attempts++
+                } else {
+                    return finalSuccess
+                }
+
             } catch (e: Exception) {
                 Log.e(TAG, "❌ Network error: ${e.message}")
                 return false
