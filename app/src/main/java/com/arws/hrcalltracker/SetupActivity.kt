@@ -108,21 +108,22 @@ class SetupActivity : AppCompatActivity() {
 
         Toast.makeText(this, "Testing connection...", Toast.LENGTH_SHORT).show()
         
-        androidx.lifecycle.lifecycleScope.launchWhenCreated {
+        // Use a standard Thread instead of coroutines to avoid dependency sync issues
+        Thread {
             val api = ApiService()
-            val success = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                api.sendCallDataSync(
-                    url, "Test HR", "TEST001", "1234567890", 
-                    "Incoming", "0", "Test Date", "SIM1"
-                )
-            }
+            val success = api.sendCallDataSync(
+                url, "Test HR", "TEST001", "1234567890", 
+                "Incoming", "0", "Test Date", "SIM1"
+            )
             
-            if (success) {
-                Toast.makeText(this@SetupActivity, "✅ Connection Successful! Check your sheet.", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(this@SetupActivity, "❌ Connection Failed. Check URL and Deployment.", Toast.LENGTH_LONG).show()
+            runOnUiThread {
+                if (success) {
+                    Toast.makeText(this@SetupActivity, "✅ Connection Successful! Check your sheet.", Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this@SetupActivity, "❌ Connection Failed. Check URL and Deployment.", Toast.LENGTH_LONG).show()
+                }
             }
-        }
+        }.start()
     }
 
     private fun updatePermissionStatus() {
