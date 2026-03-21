@@ -35,6 +35,7 @@ class SetupActivity : AppCompatActivity() {
     private lateinit var tvPermissionStatus: TextView
     private lateinit var tvPermissionHelper: TextView
     private lateinit var btnRequestPerms: MaterialButton
+    private lateinit var btnTestConnection: MaterialButton
     private lateinit var btnSave: MaterialButton
 
     private var availableSims = mutableListOf<SubscriptionInfo>()
@@ -80,6 +81,7 @@ class SetupActivity : AppCompatActivity() {
         tvPermissionHelper = findViewById(R.id.tvPermissionHelper)
         
         btnRequestPerms = findViewById(R.id.btnRequestPerms)
+        btnTestConnection = findViewById(R.id.btnTestConnection)
         btnSave = findViewById(R.id.btnSaveSetup)
 
         // Pre-fill
@@ -87,10 +89,37 @@ class SetupActivity : AppCompatActivity() {
         etScriptUrl.setText(prefs.getScriptUrl())
 
         btnRequestPerms.setOnClickListener { requestRequiredPermissions() }
+        btnTestConnection.setOnClickListener { testConnection() }
         btnSave.setOnClickListener { saveConfiguration() }
 
         updatePermissionStatus()
         loadSimCards()
+    }
+
+    private fun testConnection() {
+        val url = etScriptUrl.text.toString().trim()
+        if (url.isEmpty()) {
+            Toast.makeText(this, "Please enter a URL first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Toast.makeText(this, "Testing connection...", Toast.LENGTH_SHORT).show()
+        
+        androidx.lifecycle.lifecycleScope.launchWhenCreated {
+            val api = ApiService()
+            val success = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                api.sendCallDataSync(
+                    url, "Test HR", "TEST001", "1234567890", 
+                    "Incoming", "0", "Test Date", "SIM1"
+                )
+            }
+            
+            if (success) {
+                Toast.makeText(this@SetupActivity, "✅ Connection Successful! Check your sheet.", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this@SetupActivity, "❌ Connection Failed. Check URL and Deployment.", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun updatePermissionStatus() {

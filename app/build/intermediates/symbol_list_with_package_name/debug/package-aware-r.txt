@@ -3226,6 +3226,7 @@ id btnRequestPerms
 id btnSaveSetup
 id btnSaveSim
 id btnSyncNow
+id btnTestConnection
 id buttonPanel
 id cache_measures
 id callMeasure

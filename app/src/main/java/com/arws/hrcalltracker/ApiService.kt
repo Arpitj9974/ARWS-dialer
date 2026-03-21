@@ -1,23 +1,13 @@
 package com.arws.hrcalltracker
 
 import android.util.Log
-import okhttp3.Call
-import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import org.json.JSONObject
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-/**
- * ApiService — Sends call data to Google Sheets via Google Apps Script.
- *
- * Makes an asynchronous HTTP POST request with JSON payload.
- * The Google Apps Script endpoint appends the data as a new row in the sheet.
- */
 class ApiService {
 
     companion object {
@@ -29,22 +19,10 @@ class ApiService {
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
-        .followRedirects(true)
-        .followSslRedirects(true)
+        .followRedirects(false) // Handle redirects manually to preserve POST body
+        .followSslRedirects(false)
         .build()
 
-    /**
-     * Send call data to a specific HR's Google Sheet synchronously.
-     *
-     * @param scriptUrl   The unique Google Apps Script URL for this HR
-     * @param hrName      The HR employee's name
-     * @param employeeId  The HR employee's unique ID
-     * @param phoneNumber The phone number from the call
-     * @param callType    "Incoming", "Outgoing", or "Missed"
-     * @param duration    Call duration in seconds
-     * @param date        Formatted date string
-     * @param simName     The SIM card used
-     */
     fun sendCallDataSync(
         scriptUrl: String,
         hrName: String,
@@ -60,7 +38,6 @@ class ApiService {
             return false
         }
 
-        // Build JSON payload as per Phase 2 requirements
         val json = JSONObject().apply {
             put("hr_name", hrName)
             put("employee_id", employeeId)
@@ -71,30 +48,51 @@ class ApiService {
             put("sim", simName)
         }
 
-        val requestBody = json.toString().toRequestBody(JSON_MEDIA_TYPE)
+        return postWithManualRedirect(scriptUrl, json.toString())
+    }
 
-        val request = Request.Builder()
-            .url(scriptUrl)
-            .post(requestBody)
-            .build()
+    private fun postWithManualRedirect(url: String, jsonBody: String): Boolean {
+        var currentUrl = url
+        var attempts = 0
+        val maxRedirects = 5
 
-        return try {
-            client.newCall(request).execute().use { response ->
-                val responseBody = response.body?.string() ?: "Empty body"
-                if (response.isSuccessful) {
-                    Log.d(TAG, "✅ Data sent successfully to $scriptUrl")
-                    Log.d(TAG, "Server Response: $responseBody")
-                    true
-                } else {
-                    Log.e(TAG, "❌ Server error: ${response.code} - ${response.message}")
-                    Log.e(TAG, "❌ Error Body: $responseBody")
-                    // Often GAS returns 200 OK with HTML error page if bad URL, we need to check the exact response to be sure.
-                    false
+        while (attempts < maxRedirects) {
+            val requestBody = jsonBody.toRequestBody(JSON_MEDIA_TYPE)
+            val request = Request.Builder()
+                .url(currentUrl)
+                .post(requestBody)
+                .build()
+
+            try {
+                client.newCall(request).execute().use { response ->
+                    val code = response.code
+                    val location = response.header("Location")
+                    val body = response.body?.string() ?: ""
+
+                    Log.d(TAG, "📡 URL: $currentUrl -> Code: $code")
+
+                    if (code in 300..399 && location != null) {
+                        Log.d(TAG, "↪️ Redirecting to: $location")
+                        currentUrl = location
+                        attempts++
+                        continue
+                    }
+
+                    if (response.isSuccessful) {
+                        Log.d(TAG, "✅ Success: $body")
+                        return body.contains("success")
+                    } else {
+                        Log.e(TAG, "❌ Server Error ($code): $body")
+                        return false
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Network error: ${e.message}")
+                return false
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "❌ Network error sending data: ${e.message}")
-            false
         }
+
+        Log.e(TAG, "❌ Too many redirects")
+        return false
     }
 }
