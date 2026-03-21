@@ -1,74 +1,74 @@
 [
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/anim_pulse.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/anim/pulse.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/layout_activity_login.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/layout/activity_login.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_activity_sim_selection.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/layout/activity_sim_selection.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/anim_pulse.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/anim/pulse.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_app_icon.png.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/app_icon.png"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_gradient_bg.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/gradient_bg.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_circle_glow_purple.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/circle_glow_purple.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_circle_glow_indigo.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/circle_glow_indigo.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_circle_glow_indigo.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/circle_glow_indigo.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_bg_success_box.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/bg_success_box.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_bg_success_box.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/bg_success_box.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_bg_spinner_border.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/bg_spinner_border.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_activity_login.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/layout/activity_login.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/layout_activity_setup.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/layout/activity_setup.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_badge_background.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/badge_background.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/layout_item_hr_account.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/layout/item_hr_account.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_circle_bg.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/circle_bg.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/layout_activity_dashboard.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/layout/activity_dashboard.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_activity_setup.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/layout/activity_setup.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_app_icon.png.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/app_icon.png"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_circle_glow_light.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/circle_glow_light.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_circle_glow_purple.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/circle_glow_purple.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_bg_spinner_border.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/bg_spinner_border.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/layout_activity_sim_selection.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/layout/activity_sim_selection.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_activity_dashboard.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/layout/activity_dashboard.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/layout_dialog_add_hr.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/layout/dialog_add_hr.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_activity_admin.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/layout/activity_admin.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_circle_glow_light.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/circle_glow_light.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_dialog_add_hr.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/layout/dialog_add_hr.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_badge_background.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/badge_background.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/layout_item_hr_account.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/layout/item_hr_account.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/layout_activity_admin.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/layout/activity_admin.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_gradient_bg.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/gradient_bg.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_circle_bg.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/circle_bg.xml"
     },
     {
-        "merged": "com.arws.hrcalltracker.app-merged_res-38:/drawable_glass_card.xml.flat",
-        "source": "com.arws.hrcalltracker.app-main-40:/drawable/glass_card.xml"
+        "merged": "com.arws.hrcalltracker.app-merged_res-40:/drawable_glass_card.xml.flat",
+        "source": "com.arws.hrcalltracker.app-main-42:/drawable/glass_card.xml"
     }
 ]
