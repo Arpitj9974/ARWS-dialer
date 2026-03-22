@@ -15,8 +15,8 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_logo_raw"
-        android:roundIcon="@drawable/ic_logo_raw"
+        android:icon="@drawable/ic_launcher_scaled"
+        android:roundIcon="@drawable/ic_launcher_scaled"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.HRCallTracker"
