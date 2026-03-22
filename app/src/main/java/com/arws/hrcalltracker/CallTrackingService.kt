@@ -105,8 +105,8 @@ class CallTrackingService : Service() {
         )
 
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("HR Call Tracker")
-            .setContentText("Call tracking is running")
+            .setContentTitle("RAW")
+            .setContentText("Call tracking is active in background")
             .setSmallIcon(android.R.drawable.ic_menu_call)
             .setContentIntent(pendingIntent)
             .setOngoing(true)       // Cannot be swiped away

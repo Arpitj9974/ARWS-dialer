@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 /**
- * AppDatabase — Room Database instance for HR Call Tracker.
+ * AppDatabase — Room Database instance for RAW.
  */
 @Database(entities = [CallEntity::class], version = 5, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
@@ -22,7 +22,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "hr_call_tracker_db"
+                    "raw_db"
                 )
                 .fallbackToDestructiveMigration() // Simple for development to reset schema
                 .build()

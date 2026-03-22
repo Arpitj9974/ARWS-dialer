@@ -44,7 +44,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="About Us"
+                        android:text="RAW - About Us"
                         android:textColor="@color/primary_blue"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -65,6 +65,16 @@
                          android:text="RAW is a smart internal productivity application developed to support HR teams with structured call tracking and better workflow visibility. By allowing users to configure a selected SIM and connect call activity with Google Sheets, the app makes monitoring, reporting, and daily coordination more organized and efficient. RAW is built to be simple, reliable, and effective for real office operations."
                          android:textColor="@color/text_primary"
                          android:textSize="14sp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center"
+                        android:text="Version 1.1 - RAW"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:textStyle="italic" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -86,7 +96,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="App Tutorial"
+                        android:text="RAW - App Tutorial"
                         android:textColor="@color/primary_blue"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -129,7 +139,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Sheet &amp; Apps Script Setup"
+                        android:text="RAW - Sheet &amp; Script Setup"
                         android:textColor="@color/status_green"
                         android:textSize="18sp"
                         android:textStyle="bold" />
