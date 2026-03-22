@@ -56,15 +56,16 @@ function R_A_RecordCallData(e) {
     // Parse the incoming JSON data securely
     var R_A_data = JSON.parse(e.postData.contents);
 
-    // Append a new row with the call data
+    // Append a new row with the call data in the exact requested order:
+    // number - HR name - Duration - Date - time - Call Type - SIM
     R_A_sheet.appendRow([
-      new Date(),                // Timestamp
-      R_A_data.hr_name,          // HR Name
-      R_A_data.phone_number,     // Phone Number
-      R_A_data.call_type,        // Call Type (Incoming/Outgoing/Missed)
-      R_A_data.duration,         // Duration in seconds
-      R_A_data.date,             // Call date from device
-      R_A_data.sim               // SIM card name
+      R_A_data.phone_number,     // Column A: number (or contact name)
+      R_A_data.hr_name,          // Column B: HR name
+      R_A_data.duration,         // Column C: Duration (already formatted as mm:ss by app)
+      R_A_data.date,             // Column D: Date
+      R_A_data.time,             // Column E: time
+      R_A_data.call_type,        // Column F: Call Type
+      R_A_data.sim               // Column G: SIM
     ]);
 
     // Return success response formatted for Android App
