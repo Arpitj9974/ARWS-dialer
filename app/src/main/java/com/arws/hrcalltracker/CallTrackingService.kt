@@ -194,8 +194,8 @@ class CallTrackingService : Service() {
                     Log.d(TAG, "   SIM ID:   ${callInfo.subscriptionId}")
 
                     // ── SAVE LOCALLY & SYNC ──────────────
-                    // Unique ID: number_dateMillis_duration (millis for precise deduplication)
-                    val uniqueCallId = "${callInfo.phoneNumber}_${callInfo.dateMillis}_${callInfo.duration}"
+                    // Unique ID: number_dateMillis_duration_type_sim
+                    val uniqueCallId = "${callInfo.phoneNumber}_${callInfo.dateMillis}_${callInfo.duration}_${callInfo.callType}_${callInfo.subscriptionId}"
 
                     // Insert to database and sync using Coroutines
                     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
@@ -216,8 +216,12 @@ class CallTrackingService : Service() {
                                 uniqueCallId = uniqueCallId
                             )
 
-                            val insertedId = db.callDao().insertCall(entity)
-                            Log.d(TAG, "💾 Saved call locally to Room DB (Row ID: $insertedId)")
+                            try {
+                                val insertedId = db.callDao().insertCall(entity)
+                                Log.d(TAG, "💾 Saved call locally to Room DB (Row ID: $insertedId)")
+                            } catch (e: Exception) {
+                                Log.d(TAG, "⚠️ Call insert blocked by Room DB constraint: $uniqueCallId")
+                            }
 
                             // Trigger sync after saving
                             SyncManager(this@CallTrackingService).syncPendingCalls()

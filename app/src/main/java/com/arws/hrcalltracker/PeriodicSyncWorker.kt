@@ -66,8 +66,8 @@ class PeriodicSyncWorker(
 
             // Filter by selected SIM
             if (call.subscriptionId == companySimId) {
-                // Generate a unique key for each call using: phone number + date + duration
-                val uniqueCallId = "${call.phoneNumber}_${call.dateMillis}_${call.duration}"
+                // Generate a unique key for each call using: phone number + date + duration + type + sim
+                val uniqueCallId = "${call.phoneNumber}_${call.dateMillis}_${call.duration}_${call.callType}_${call.subscriptionId}"
                 val exists = db.callDao().checkExists(uniqueCallId)
                 
                 if (exists == 0) {
@@ -82,8 +82,12 @@ class PeriodicSyncWorker(
                         dateMillis = call.dateMillis,
                         uniqueCallId = uniqueCallId
                     )
-                    db.callDao().insertCall(entity)
-                    Log.d(TAG, "   ✅ Row queued for upload: $uniqueCallId")
+                    try {
+                        db.callDao().insertCall(entity)
+                        Log.d(TAG, "   ✅ Row inserted to DB queue: $uniqueCallId")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "   ❌ Row DB constraint fail (Room unique collision): $uniqueCallId")
+                    }
                 } else {
                     Log.d(TAG, "   ⚠️ Row skipped as duplicate (already in Room DB): $uniqueCallId")
                 }

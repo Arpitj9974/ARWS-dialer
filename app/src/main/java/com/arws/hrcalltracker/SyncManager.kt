@@ -21,6 +21,8 @@ class SyncManager(private val context: Context) {
 
     companion object {
         private const val TAG = "SyncManager"
+        @Volatile
+        private var isSyncing = false
     }
 
     private val db = AppDatabase.getDatabase(context)
@@ -28,11 +30,17 @@ class SyncManager(private val context: Context) {
     private val prefs = PrefsManager(context)
 
     fun syncPendingCalls() {
+        if (isSyncing) {
+            Log.d(TAG, "⚠️ Sync already in progress (another thread/worker is uploading). Skipping.")
+            return
+        }
+
         val scriptUrl = prefs.getScriptUrl()
 
         if (scriptUrl.isEmpty()) return
         if (!NetworkUtils.isInternetAvailable(context)) return
 
+        isSyncing = true
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val pendingCalls = db.callDao().getPendingCalls()
@@ -72,6 +80,9 @@ class SyncManager(private val context: Context) {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error during sync: ${e.message}")
+            } finally {
+                isSyncing = false
+                Log.d(TAG, "🛑 SyncManager finished. Lock released.")
             }
         }
     }

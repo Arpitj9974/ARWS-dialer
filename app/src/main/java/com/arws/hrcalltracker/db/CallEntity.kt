@@ -6,7 +6,10 @@ import androidx.room.PrimaryKey
 /**
  * CallEntity — Room Database Table for storing offline/pending calls.
  */
-@Entity(tableName = "pending_calls")
+@Entity(
+    tableName = "pending_calls",
+    indices = [androidx.room.Index(value = ["uniqueCallId"], unique = true)]
+)
 data class CallEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
