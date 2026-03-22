@@ -44,7 +44,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="About the App"
+                        android:text="About Us"
                         android:textColor="@color/primary_blue"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -53,7 +53,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="Created by ARPIT JAISWAL and RANI SAHU."
+                        android:text="Created by Arpit Jaiswal and Rani Sahu."
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -62,7 +62,7 @@
                          android:layout_width="match_parent"
                          android:layout_height="wrap_content"
                          android:layout_marginTop="8dp"
-                         android:text="HR Call Tracker is a professional tool built to automate recruitment log tracking, ensuring every interaction is captured securely in your Google Sheet."
+                         android:text="RAW is a smart internal productivity application developed to support HR teams with structured call tracking and better workflow visibility. By allowing users to configure a selected SIM and connect call activity with Google Sheets, the app makes monitoring, reporting, and daily coordination more organized and efficient. RAW is built to be simple, reliable, and effective for real office operations."
                          android:textColor="@color/text_primary"
                          android:textSize="14sp" />
                 </LinearLayout>
@@ -104,7 +104,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="1. Login using your HR credentials.\n2. In the Dashboard, click 'Edit Setup' if the Google Sheet URL is not set.\n3. Grant the required Call Log and Contacts permissions when prompted.\n4. Select the correct SIM card for tracking.\n5. The app will automatically sync calls every 30 minutes in the background.\n6. You can manually 'Sync Now' at any time to push the latest logs immediately."
+                        android:text="1. Login using your credentials.\n2. Grant the required Call Log and Contacts permissions when prompted.\n3. Select the correct SIM card for company tracking.\n4. The app will automatically sync calls every 30 minutes in the background.\n5. You can manually tap 'Sync Now' on the dashboard at any time to push latest logs immediately."
                         android:textColor="@color/text_primary"
                         android:textSize="13sp"
                         android:lineSpacingExtra="4dp" />
