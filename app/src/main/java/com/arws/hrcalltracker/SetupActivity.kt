@@ -221,4 +221,27 @@ class SetupActivity : AppCompatActivity() {
         startActivity(Intent(this, DashboardActivity::class.java))
         finish()
     }
+
+    override fun onCreateOptionsMenu(menu: android.view.Menu?): Boolean {
+        menuInflater.inflate(R.menu.dashboard_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_about -> {
+                startActivity(Intent(this, AboutUsActivity::class.java))
+                return true
+            }
+            R.id.action_tutorial -> {
+                startActivity(Intent(this, TutorialActivity::class.java))
+                return true
+            }
+            R.id.action_setup_guide -> {
+                startActivity(Intent(this, SheetSetupActivity::class.java))
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
 }

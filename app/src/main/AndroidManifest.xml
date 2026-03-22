@@ -44,9 +44,19 @@
             android:name=".DashboardActivity"
             android:exported="false" />
 
-        <!-- About & Support -->
+        <!-- Support Activities -->
         <activity
-            android:name=".AboutActivity"
+            android:name=".AboutUsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.HRCallTracker" />
+            
+        <activity
+            android:name=".TutorialActivity"
+            android:exported="false"
+            android:theme="@style/Theme.HRCallTracker" />
+            
+        <activity
+            android:name=".SheetSetupActivity"
             android:exported="false"
             android:theme="@style/Theme.HRCallTracker" />
 
