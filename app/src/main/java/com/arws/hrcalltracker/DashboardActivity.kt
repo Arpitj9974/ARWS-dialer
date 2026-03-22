@@ -54,9 +54,23 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
-        if (item.itemId == R.id.action_about) {
-            startActivity(Intent(this, AboutActivity::class.java))
-            return true
+        val intent = Intent(this, AboutActivity::class.java)
+        when (item.itemId) {
+            R.id.action_about -> {
+                intent.putExtra("SCROLL_TO", "ABOUT")
+                startActivity(intent)
+                return true
+            }
+            R.id.action_tutorial -> {
+                intent.putExtra("SCROLL_TO", "TUTORIAL")
+                startActivity(intent)
+                return true
+            }
+            R.id.action_setup_guide -> {
+                intent.putExtra("SCROLL_TO", "SETUP")
+                startActivity(intent)
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }

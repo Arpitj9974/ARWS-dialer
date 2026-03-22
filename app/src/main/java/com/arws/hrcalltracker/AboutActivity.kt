@@ -2,7 +2,9 @@ package com.arws.hrcalltracker
 
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -83,6 +85,18 @@ function doPost(e) {
             val clip = android.content.ClipData.newPlainText("Apps Script Code", appsScriptCode)
             clipboard.setPrimaryClip(clip)
             Toast.makeText(this, "Code copied to clipboard!", Toast.LENGTH_SHORT).show()
+        }
+
+        // Auto-scroll logic based on intent
+        val scrollTo = intent.getStringExtra("SCROLL_TO")
+        val scrollView = findViewById<androidx.core.widget.NestedScrollView>(R.id.aboutScrollView)
+        
+        scrollView.post {
+            when (scrollTo) {
+                "ABOUT" -> scrollView.smoothScrollTo(0, findViewById<View>(R.id.cardAbout).top)
+                "TUTORIAL" -> scrollView.smoothScrollTo(0, findViewById<View>(R.id.cardTutorial).top)
+                "SETUP" -> scrollView.smoothScrollTo(0, findViewById<View>(R.id.cardSetup).top)
+            }
         }
     }
 }

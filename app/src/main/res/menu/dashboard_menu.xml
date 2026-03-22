@@ -1,9 +1,15 @@
-<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_about"
-        android:icon="@drawable/ic_menu_about"
-        android:title="About"
-        app:showAsAction="always" />
+        android:title="About the App"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_tutorial"
+        android:title="App Tutorial"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_setup_guide"
+        android:title="Sheet &amp; Apps Script Setup"
+        app:showAsAction="never" />
 </menu>
