@@ -86,7 +86,7 @@ class CallLogHelper(private val context: Context) {
                     CallLog.Calls.DATE,
                     "subscription_id"
                 ),
-                "${CallLog.Calls.DATE} > ?",
+                "${CallLog.Calls.DATE} >= ?",
                 arrayOf(timestamp.toString()),
                 "${CallLog.Calls.DATE} ASC"
             )

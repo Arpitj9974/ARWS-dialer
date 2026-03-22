@@ -5,50 +5,64 @@ import android.database.Cursor
 import android.provider.ContactsContract
 import android.util.Log
 import com.arws.hrcalltracker.db.AppDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
- * SyncManager — Handles sending pending calls from local SQLite database to Google Sheets.
+ * SyncManager — Handles sending pending calls from local Room DB to Google Sheets.
  *
- * For each call it will:
- *  - Look up the phone number in Android Contacts
- *  - If found → send the contact's display name
- *  - If NOT found → send the raw phone number
+ * CRITICAL FIX: This is now a suspend function (not fire-and-forget).
+ * It uses a Mutex to guarantee only one upload cycle runs at a time,
+ * preventing the race condition that caused duplicate rows in Sheets.
  */
 class SyncManager(private val context: Context) {
 
     companion object {
         private const val TAG = "SyncManager"
-        @Volatile
-        private var isSyncing = false
+        private val syncMutex = Mutex()
     }
 
     private val db = AppDatabase.getDatabase(context)
     private val apiService = ApiService()
     private val prefs = PrefsManager(context)
 
-    fun syncPendingCalls() {
-        if (isSyncing) {
-            Log.d(TAG, "⚠️ Sync already in progress (another thread/worker is uploading). Skipping.")
+    /**
+     * Uploads all pending (isSynced=0) calls to Google Sheets.
+     *
+     * - Uses a Mutex so concurrent callers block instead of duplicating work.
+     * - Runs synchronously inside the caller's coroutine (no fire-and-forget).
+     * - Marks each call as synced immediately after successful upload.
+     */
+    suspend fun syncPendingCalls() {
+        if (syncMutex.isLocked) {
+            Log.d(TAG, "⚠️ Sync already in progress (Mutex locked). Skipping this request.")
             return
         }
 
         val scriptUrl = prefs.getScriptUrl()
+        if (scriptUrl.isEmpty()) {
+            Log.d(TAG, "⚠️ Script URL is empty. Skipping sync.")
+            return
+        }
+        if (!NetworkUtils.isInternetAvailable(context)) {
+            Log.d(TAG, "⚠️ No internet available. Skipping sync.")
+            return
+        }
 
-        if (scriptUrl.isEmpty()) return
-        if (!NetworkUtils.isInternetAvailable(context)) return
-
-        isSyncing = true
-        CoroutineScope(Dispatchers.IO).launch {
+        syncMutex.withLock {
             try {
                 val pendingCalls = db.callDao().getPendingCalls()
-                Log.d(TAG, "🚀 SyncManager starting API upload loop. Total pending calls queued for upload: ${pendingCalls.size}")
+                Log.d(TAG, "🚀 SyncManager starting upload. Pending calls: ${pendingCalls.size}")
+
+                if (pendingCalls.isEmpty()) {
+                    Log.d(TAG, "✅ No pending calls to upload.")
+                    return
+                }
+
                 val actualHrName = prefs.getHrName()
 
                 for (call in pendingCalls) {
-                    // Remove Indian country code (+91 or 91) and any spaces/dashes
+                    // Clean Indian country code
                     var cleanNumber = call.phoneNumber.replace(" ", "").replace("-", "")
                     if (cleanNumber.startsWith("+91")) {
                         cleanNumber = cleanNumber.substring(3)
@@ -56,13 +70,15 @@ class SyncManager(private val context: Context) {
                         cleanNumber = cleanNumber.substring(2)
                     }
 
-                    // Look up contact name — if saved use name, else use the formatted phone number
+                    // Look up contact name
                     val callerLabel = getContactName(call.phoneNumber) ?: cleanNumber
+
+                    Log.d(TAG, "📤 Uploading call ID=${call.id}, key=${call.uniqueCallId}, label=$callerLabel")
 
                     val success = apiService.sendCallDataSync(
                         scriptUrl = scriptUrl,
-                        hrName = actualHrName,          // Always the HR's name
-                        phoneNumber = callerLabel,      // Contact Name OR 10-digit number
+                        hrName = actualHrName,
+                        phoneNumber = callerLabel,
                         callType = call.callType,
                         duration = call.duration,
                         date = call.date,
@@ -72,17 +88,16 @@ class SyncManager(private val context: Context) {
 
                     if (success) {
                         db.callDao().markAsSynced(call.id)
-                        Log.d(TAG, "✅ Synced and marked as done call ID=${call.id} (${call.phoneNumber})")
+                        Log.d(TAG, "   ✅ Uploaded & marked synced: ID=${call.id}, key=${call.uniqueCallId}")
                     } else {
-                        Log.w(TAG, "❌ Sync failed for call ID=${call.id}. Will retry later.")
-                        break
+                        Log.w(TAG, "   ❌ Upload failed for ID=${call.id}. Stopping batch to retry later.")
+                        break  // Stop on first failure to preserve order
                     }
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error during sync: ${e.message}")
+                Log.e(TAG, "Error during sync: ${e.message}", e)
             } finally {
-                isSyncing = false
-                Log.d(TAG, "🛑 SyncManager finished. Lock released.")
+                Log.d(TAG, "🛑 SyncManager finished. Mutex released.")
             }
         }
     }

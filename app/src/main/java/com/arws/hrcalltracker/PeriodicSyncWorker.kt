@@ -10,7 +10,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
- * Periodic Sync Worker
+ * Periodic Sync Worker — Scans call log, deduplicates, inserts into Room, then uploads.
+ *
+ * DUPLICATE FIX:
+ * 1. Batch-level dedup: filters duplicate uniqueCallIds within a single scan result.
+ * 2. Room-level dedup: checks DB before insert + unique index with IGNORE strategy.
+ * 3. Synchronous upload: awaits SyncManager (no fire-and-forget).
  */
 class PeriodicSyncWorker(
     private val context: Context,
@@ -43,70 +48,97 @@ class PeriodicSyncWorker(
             lastScanTime
         }
 
-        Log.d(TAG, "🔍 Starting Periodic Scan. current last_scan_timestamp: $lastScanTime (scanning since: $scanSince)")
+        Log.d(TAG, "═══════════════════════════════════════════")
+        Log.d(TAG, "🔍 SCAN START. last_scan_timestamp=$lastScanTime, scanning since=$scanSince")
 
-        // 1. Properly queries CallLog.Calls for only records newer than scanSince.
-        // 2. Uses `cursor.moveToNext()` internally to properly loop through all matching rows.
-        // 3. Extracts values correctly into fresh CallInfo objects for each row natively.
+        // Step 1: Query call log for rows >= scanSince
         val newCalls = callLogHelper.scanCallsSince(scanSince)
-        Log.d(TAG, "🔍 Total call log rows fetched natively: ${newCalls.size}")
+        Log.d(TAG, "🔍 Total rows fetched from call log: ${newCalls.size}")
 
         val companySimId = prefs.getCompanySimId()
         val companySimName = prefs.getCompanySimName()
         var maxScannedTimestamp = lastScanTime
 
-        // Iterates through EVERY matching row correctly
-        for (call in newCalls) {
-            Log.d(TAG, "📞 Evaluating row: Number: ${call.phoneNumber}, Date: ${call.dateMillis}, Duration: ${call.duration}, Type: ${call.callType}, SIM: ${call.subscriptionId}")
+        // Step 2: Build unique keys and deduplicate within this batch
+        val seenKeysInBatch = mutableSetOf<String>()
+        var insertedCount = 0
+        var skippedBatchDup = 0
+        var skippedRoomDup = 0
+        var skippedSimMismatch = 0
 
-            // Always advance the scan window to avoid re-reading old calls later
+        for (call in newCalls) {
+            // Always advance the scan window
             if (call.dateMillis > maxScannedTimestamp) {
                 maxScannedTimestamp = call.dateMillis
             }
 
             // Filter by selected SIM
-            if (call.subscriptionId == companySimId) {
-                // Generate a unique key for each call using: phone number + date + duration + type + sim
-                val uniqueCallId = "${call.phoneNumber}_${call.dateMillis}_${call.duration}_${call.callType}_${call.subscriptionId}"
-                val exists = db.callDao().checkExists(uniqueCallId)
-                
-                if (exists == 0) {
-                    // Create a fresh call model entity object for SQLite
-                    val entity = CallEntity(
-                        phoneNumber = call.phoneNumber,
-                        callType = call.callType,
-                        duration = call.duration,
-                        date = call.date,
-                        time = call.time,
-                        simName = companySimName,
-                        dateMillis = call.dateMillis,
-                        uniqueCallId = uniqueCallId
-                    )
-                    try {
-                        db.callDao().insertCall(entity)
-                        Log.d(TAG, "   ✅ Row inserted to DB queue: $uniqueCallId")
-                    } catch (e: Exception) {
-                        Log.e(TAG, "   ❌ Row DB constraint fail (Room unique collision): $uniqueCallId")
-                    }
+            if (call.subscriptionId != companySimId) {
+                skippedSimMismatch++
+                Log.d(TAG, "   ❌ SIM mismatch: ${call.phoneNumber} (row SIM=${call.subscriptionId}, required=$companySimId)")
+                continue
+            }
+
+            // Generate unique key
+            val uniqueCallId = "${call.phoneNumber}_${call.dateMillis}_${call.duration}_${call.callType}_${call.subscriptionId}"
+
+            Log.d(TAG, "📞 Row: num=${call.phoneNumber}, date=${call.date}, time=${call.time}, dur=${call.duration}, type=${call.callType}, sim=${call.subscriptionId}, key=$uniqueCallId")
+
+            // Batch-level dedup: skip if we already processed this exact key in this scan
+            if (!seenKeysInBatch.add(uniqueCallId)) {
+                skippedBatchDup++
+                Log.d(TAG, "   ⚠️ BATCH DUPLICATE — same key already seen in this scan. Skipped.")
+                continue
+            }
+
+            // Room-level dedup: skip if already in database
+            val exists = db.callDao().checkExists(uniqueCallId)
+            if (exists > 0) {
+                skippedRoomDup++
+                Log.d(TAG, "   ⚠️ ROOM DUPLICATE — key already exists in database. Skipped.")
+                continue
+            }
+
+            // Insert as pending
+            val entity = CallEntity(
+                phoneNumber = call.phoneNumber,
+                callType = call.callType,
+                duration = call.duration,
+                date = call.date,
+                time = call.time,
+                simName = companySimName,
+                dateMillis = call.dateMillis,
+                uniqueCallId = uniqueCallId
+            )
+            try {
+                val rowId = db.callDao().insertCall(entity)
+                if (rowId != -1L) {
+                    insertedCount++
+                    Log.d(TAG, "   ✅ INSERTED as pending (rowId=$rowId): $uniqueCallId")
                 } else {
-                    Log.d(TAG, "   ⚠️ Row skipped as duplicate (already in Room DB): $uniqueCallId")
+                    skippedRoomDup++
+                    Log.d(TAG, "   ⚠️ INSERT IGNORED by Room unique constraint: $uniqueCallId")
                 }
-            } else {
-                Log.d(TAG, "   ❌ Row ignored due to SIM mismatch. (Row SIM: ${call.subscriptionId}, Required: $companySimId)")
+            } catch (e: Exception) {
+                Log.e(TAG, "   ❌ INSERT ERROR: $uniqueCallId — ${e.message}")
             }
         }
 
-        // Save the maximum timestamp we scanned up to, so next scan is fresh
+        // Step 3: Update scan timestamp
         if (maxScannedTimestamp > lastScanTime) {
             prefs.saveLastUploadedTimestamp(maxScannedTimestamp)
-            Log.d(TAG, "🆙 Final updated last_scan_timestamp to: $maxScannedTimestamp")
+            Log.d(TAG, "🆙 Updated last_scan_timestamp: $lastScanTime → $maxScannedTimestamp")
         } else {
-            Log.d(TAG, "⏭️ last_scan_timestamp remains unchanged: $lastScanTime")
+            Log.d(TAG, "⏭️ last_scan_timestamp unchanged: $lastScanTime")
         }
 
-        // Sync any pending (not-yet-uploaded) calls to Google Sheets
+        Log.d(TAG, "📊 SCAN SUMMARY: fetched=${newCalls.size}, inserted=$insertedCount, batchDup=$skippedBatchDup, roomDup=$skippedRoomDup, simMismatch=$skippedSimMismatch")
+
+        // Step 4: Upload pending calls (synchronous — awaits completion)
         val syncManager = SyncManager(context)
         syncManager.syncPendingCalls()
+
+        Log.d(TAG, "═══════════════════════════════════════════")
 
         return@withContext Result.success()
     }
