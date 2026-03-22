@@ -33,6 +33,7 @@ class DashboardActivity : AppCompatActivity() {
         // Setup Toolbar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
 
         // Bind Views
         tvSimNameValue = findViewById(R.id.tvSimNameValue)
@@ -45,6 +46,19 @@ class DashboardActivity : AppCompatActivity() {
         setupUI()
         setupObservers()
         startPeriodicWork()
+    }
+
+    override fun onCreateOptionsMenu(menu: android.view.Menu?): Boolean {
+        menuInflater.inflate(R.menu.dashboard_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+        if (item.itemId == R.id.action_about) {
+            startActivity(Intent(this, AboutActivity::class.java))
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun setupUI() {

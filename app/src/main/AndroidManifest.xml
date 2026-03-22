@@ -44,6 +44,12 @@
             android:name=".DashboardActivity"
             android:exported="false" />
 
+        <!-- About & Support -->
+        <activity
+            android:name=".AboutActivity"
+            android:exported="false"
+            android:theme="@style/Theme.HRCallTracker" />
+
         <!-- Call Tracking Foreground Service -->
         <service
             android:name=".CallTrackingService"
