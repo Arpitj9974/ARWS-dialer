@@ -15,21 +15,28 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/app_icon"
-        android:roundIcon="@drawable/app_icon"
+        android:icon="@drawable/ic_logo_raw"
+        android:roundIcon="@drawable/ic_logo_raw"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.HRCallTracker"
         tools:targetApi="31">
 
-        <!-- Setup Activity (MAIN LAUNCHER) -->
+        <!-- Splash Activity (NEW MAIN LAUNCHER) -->
         <activity
-            android:name=".SetupActivity"
-            android:exported="true">
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- Setup Activity -->
+        <activity
+            android:name=".SetupActivity"
+            android:exported="false">
         </activity>
 
         <!-- Dashboard -->
