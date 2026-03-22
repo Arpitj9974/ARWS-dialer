@@ -125,8 +125,9 @@ class SetupActivity : AppCompatActivity() {
     private fun updatePermissionStatus() {
         val hasCallLog = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED
         val hasPhoneState = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+        val hasContacts = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
 
-        if (hasCallLog && hasPhoneState) {
+        if (hasCallLog && hasPhoneState && hasContacts) {
             llPermissionStatus.setBackgroundResource(R.drawable.bg_success_box)
             ivPermissionIcon.setImageResource(android.R.drawable.checkbox_on_background)
             ivPermissionIcon.setColorFilter(ContextCompat.getColor(this, R.color.status_green))
@@ -146,7 +147,11 @@ class SetupActivity : AppCompatActivity() {
     }
 
     private fun requestRequiredPermissions() {
-        val perms = mutableListOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_PHONE_STATE)
+        val perms = mutableListOf(
+            Manifest.permission.READ_CALL_LOG,
+            Manifest.permission.READ_PHONE_STATE,
+            Manifest.permission.READ_CONTACTS
+        )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) perms.add(Manifest.permission.POST_NOTIFICATIONS)
         ActivityCompat.requestPermissions(this, perms.toTypedArray(), PERMISSION_REQUEST_CODE)
     }

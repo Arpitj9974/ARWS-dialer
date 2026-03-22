@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 /**
  * AppDatabase — Room Database instance for HR Call Tracker.
  */
-@Database(entities = [CallEntity::class], version = 2, exportSchema = false)
+@Database(entities = [CallEntity::class], version = 4, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun callDao(): CallDao

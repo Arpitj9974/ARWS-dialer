@@ -190,12 +190,12 @@ class CallTrackingService : Service() {
                     Log.d(TAG, "   Number:   ${callInfo.phoneNumber}")
                     Log.d(TAG, "   Type:     ${callInfo.callType}")
                     Log.d(TAG, "   Duration: ${callInfo.duration} sec")
-                    Log.d(TAG, "   Date:     ${callInfo.formattedDate}")
+                    Log.d(TAG, "   Date:     ${callInfo.date} ${callInfo.time}")
                     Log.d(TAG, "   SIM ID:   ${callInfo.subscriptionId}")
 
                     // ── SAVE LOCALLY & SYNC ──────────────
-                    // Unique ID: number_date_duration
-                    val uniqueCallId = "${callInfo.phoneNumber}_${callInfo.date}_${callInfo.duration}"
+                    // Unique ID: number_dateMillis_duration (millis for precise deduplication)
+                    val uniqueCallId = "${callInfo.phoneNumber}_${callInfo.dateMillis}_${callInfo.duration}"
 
                     // Insert to database and sync using Coroutines
                     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
@@ -206,18 +206,19 @@ class CallTrackingService : Service() {
                             Log.d(TAG, "⚠️ Duplicate call detected (ID: $uniqueCallId). Ignoring.")
                         } else {
                             val entity = com.arws.hrcalltracker.db.CallEntity(
-                                hrName = prefs.getHrName(),
                                 phoneNumber = callInfo.phoneNumber,
                                 callType = callInfo.callType,
                                 duration = callInfo.duration,
-                                date = callInfo.formattedDate,
+                                date = callInfo.date,
+                                time = callInfo.time,
                                 simName = prefs.getCompanySimName(),
+                                dateMillis = callInfo.dateMillis,
                                 uniqueCallId = uniqueCallId
                             )
-                            
+
                             val insertedId = db.callDao().insertCall(entity)
                             Log.d(TAG, "💾 Saved call locally to Room DB (Row ID: $insertedId)")
-                            
+
                             // Trigger sync after saving
                             SyncManager(this@CallTrackingService).syncPendingCalls()
                         }

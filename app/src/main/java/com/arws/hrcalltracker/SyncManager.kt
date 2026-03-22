@@ -1,6 +1,8 @@
 package com.arws.hrcalltracker
 
 import android.content.Context
+import android.database.Cursor
+import android.provider.ContactsContract
 import android.util.Log
 import com.arws.hrcalltracker.db.AppDatabase
 import kotlinx.coroutines.CoroutineScope
@@ -9,6 +11,11 @@ import kotlinx.coroutines.launch
 
 /**
  * SyncManager — Handles sending pending calls from local SQLite database to Google Sheets.
+ *
+ * For each call it will:
+ *  - Look up the phone number in Android Contacts
+ *  - If found → send the contact's display name
+ *  - If NOT found → send the raw phone number
  */
 class SyncManager(private val context: Context) {
 
@@ -22,7 +29,6 @@ class SyncManager(private val context: Context) {
 
     fun syncPendingCalls() {
         val scriptUrl = prefs.getScriptUrl()
-        val hrName = prefs.getHrName()
 
         if (scriptUrl.isEmpty()) return
         if (!NetworkUtils.isInternetAvailable(context)) return
@@ -32,9 +38,12 @@ class SyncManager(private val context: Context) {
                 val pendingCalls = db.callDao().getPendingCalls()
 
                 for (call in pendingCalls) {
+                    // Look up contact name — if saved use name, else use the phone number
+                    val callerLabel = getContactName(call.phoneNumber) ?: call.phoneNumber
+
                     val success = apiService.sendCallDataSync(
                         scriptUrl = scriptUrl,
-                        hrName = hrName,
+                        hrName = callerLabel,   // contact name OR phone number
                         phoneNumber = call.phoneNumber,
                         callType = call.callType,
                         duration = call.duration,
@@ -44,14 +53,48 @@ class SyncManager(private val context: Context) {
                     )
 
                     if (success) {
-                        db.callDao().deleteCall(call.id)
+                        db.callDao().markAsSynced(call.id)
+                        Log.d(TAG, "✅ Synced and marked as done call ID=${call.id} (${call.phoneNumber})")
                     } else {
-                        break 
+                        Log.w(TAG, "❌ Sync failed for call ID=${call.id}. Will retry later.")
+                        break
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error during sync: ${e.message}")
             }
+        }
+    }
+
+    /**
+     * Looks up a phone number in Android Contacts.
+     * Returns the display name if the number is saved, or null if not found.
+     */
+    private fun getContactName(phoneNumber: String): String? {
+        if (phoneNumber.isBlank()) return null
+        var cursor: Cursor? = null
+        return try {
+            val uri = android.net.Uri.withAppendedPath(
+                ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+                android.net.Uri.encode(phoneNumber)
+            )
+            cursor = context.contentResolver.query(
+                uri,
+                arrayOf(ContactsContract.PhoneLookup.DISPLAY_NAME),
+                null,
+                null,
+                null
+            )
+            if (cursor != null && cursor.moveToFirst()) {
+                cursor.getString(cursor.getColumnIndexOrThrow(ContactsContract.PhoneLookup.DISPLAY_NAME))
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error looking up contact for $phoneNumber: ${e.message}")
+            null
+        } finally {
+            cursor?.close()
         }
     }
 }

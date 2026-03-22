@@ -31,7 +31,12 @@ class PeriodicSyncWorker(
             return@withContext Result.failure()
         }
 
+        // Clean up old synced calls (older than 7 days) to prevent infinite DB growth
+        val sevenDaysAgoMillis = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
+        db.callDao().deleteOldSyncedCalls(sevenDaysAgoMillis)
+
         val lastScanTime = prefs.getLastUploadedTimestamp()
+        // If never scanned, go back 24 hours. Otherwise start from last scanned time.
         val scanSince = if (lastScanTime == 0L) {
             System.currentTimeMillis() - 24 * 60 * 60 * 1000L
         } else {
@@ -44,11 +49,13 @@ class PeriodicSyncWorker(
         var maxScannedTimestamp = lastScanTime
 
         for (call in newCalls) {
+            // Always advance the scan window to avoid re-reading old calls
             if (call.dateMillis > maxScannedTimestamp) {
                 maxScannedTimestamp = call.dateMillis
             }
 
             if (call.subscriptionId == companySimId) {
+                // Use dateMillis (not date string) for precise deduplication
                 val uniqueCallId = "${call.phoneNumber}_${call.dateMillis}_${call.duration}"
                 val exists = db.callDao().checkExists(uniqueCallId)
                 if (exists == 0) {
@@ -59,15 +66,22 @@ class PeriodicSyncWorker(
                         date = call.date,
                         time = call.time,
                         simName = companySimName,
+                        dateMillis = call.dateMillis,
                         uniqueCallId = uniqueCallId
                     )
                     db.callDao().insertCall(entity)
+                } else {
+                    Log.d(TAG, "⚠️ Skipping duplicate call: $uniqueCallId")
                 }
             }
         }
 
-        prefs.saveLastUploadedTimestamp(maxScannedTimestamp)
-        
+        // Save the maximum timestamp we scanned up to, so next scan is fresh
+        if (maxScannedTimestamp > lastScanTime) {
+            prefs.saveLastUploadedTimestamp(maxScannedTimestamp)
+        }
+
+        // Sync any pending (not-yet-uploaded) calls to Google Sheets
         val syncManager = SyncManager(context)
         syncManager.syncPendingCalls()
 

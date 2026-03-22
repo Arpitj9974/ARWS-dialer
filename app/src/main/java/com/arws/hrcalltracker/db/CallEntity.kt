@@ -10,14 +10,18 @@ import androidx.room.PrimaryKey
 data class CallEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    
+
     val phoneNumber: String,
     val callType: String,
     val duration: String,
-    val date: String, // dd/MM/yyyy
-    val time: String, // HH:mm:ss
+    val date: String,      // dd/MM/yyyy
+    val time: String,      // HH:mm:ss
     val simName: String,
-    
-    // Unique ID used to prevent duplicate uploads: number_date_duration
-    val uniqueCallId: String
+    val dateMillis: Long,  // epoch millis — used for uniqueCallId deduplication
+
+    // Unique ID: number_dateMillis_duration — prevents duplicate DB inserts
+    val uniqueCallId: String,
+
+    // Flag indicating if the call was successfully pushed to Google Sheets
+    val isSynced: Boolean = false
 )
