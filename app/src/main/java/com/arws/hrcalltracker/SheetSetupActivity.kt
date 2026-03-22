@@ -41,13 +41,13 @@ function doPost(e) {
 
     // Append a new row with the call data
     sheet.appendRow([
-      new Date(),        // Timestamp
-      data.hr,           // HR Name
-      data.number,       // Phone Number
-      data.type,         // Call Type (Incoming/Outgoing/Missed)
-      data.duration,     // Duration in seconds
-      data.date,         // Call date from device
-      data.sim           // SIM card name
+      new Date(),            // Timestamp
+      data.hr_name,          // HR Name
+      data.phone_number,     // Phone Number
+      data.call_type,        // Call Type (Incoming/Outgoing/Missed)
+      data.duration,         // Duration in seconds
+      data.date,             // Call date from device
+      data.sim               // SIM card name
     ]);
 
     // Return success response

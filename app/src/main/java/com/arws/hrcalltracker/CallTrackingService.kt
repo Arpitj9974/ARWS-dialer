@@ -81,7 +81,7 @@ class CallTrackingService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
-                "HR Call Tracker",
+                "RAW",
                 NotificationManager.IMPORTANCE_LOW // Low = no sound, just persistent
             ).apply {
                 description = "Keeps the call tracking service running"

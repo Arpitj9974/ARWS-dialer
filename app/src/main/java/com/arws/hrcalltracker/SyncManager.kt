@@ -6,7 +6,6 @@ import android.provider.ContactsContract
 import android.util.Log
 import com.arws.hrcalltracker.db.AppDatabase
 import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 
 /**
  * SyncManager — Handles sending pending calls from local Room DB to Google Sheets.
@@ -34,11 +33,6 @@ class SyncManager(private val context: Context) {
      * - Marks each call as synced immediately after successful upload.
      */
     suspend fun syncPendingCalls() {
-        if (syncMutex.isLocked) {
-            Log.d(TAG, "⚠️ Sync already in progress (Mutex locked). Skipping this request.")
-            return
-        }
-
         val scriptUrl = prefs.getScriptUrl()
         if (scriptUrl.isEmpty()) {
             Log.d(TAG, "⚠️ Script URL is empty. Skipping sync.")
@@ -49,56 +43,61 @@ class SyncManager(private val context: Context) {
             return
         }
 
-        syncMutex.withLock {
-            try {
-                val pendingCalls = db.callDao().getPendingCalls()
-                Log.d(TAG, "🚀 SyncManager starting upload. Pending calls: ${pendingCalls.size}")
+        // tryLock returns false immediately if another coroutine holds the Mutex
+        if (!syncMutex.tryLock()) {
+            Log.d(TAG, "⚠️ Sync already in progress (Mutex locked). Skipping this request.")
+            return
+        }
 
-                if (pendingCalls.isEmpty()) {
-                    Log.d(TAG, "✅ No pending calls to upload.")
-                    return
-                }
+        try {
+            val pendingCalls = db.callDao().getPendingCalls()
+            Log.d(TAG, "🚀 SyncManager starting upload. Pending calls: ${pendingCalls.size}")
 
-                val actualHrName = prefs.getHrName()
-
-                for (call in pendingCalls) {
-                    // Clean Indian country code
-                    var cleanNumber = call.phoneNumber.replace(" ", "").replace("-", "")
-                    if (cleanNumber.startsWith("+91")) {
-                        cleanNumber = cleanNumber.substring(3)
-                    } else if (cleanNumber.startsWith("91") && cleanNumber.length > 10) {
-                        cleanNumber = cleanNumber.substring(2)
-                    }
-
-                    // Look up contact name
-                    val callerLabel = getContactName(call.phoneNumber) ?: cleanNumber
-
-                    Log.d(TAG, "📤 Uploading call ID=${call.id}, key=${call.uniqueCallId}, label=$callerLabel")
-
-                    val success = apiService.sendCallDataSync(
-                        scriptUrl = scriptUrl,
-                        hrName = actualHrName,
-                        phoneNumber = callerLabel,
-                        callType = call.callType,
-                        duration = call.duration,
-                        date = call.date,
-                        time = call.time,
-                        simName = call.simName
-                    )
-
-                    if (success) {
-                        db.callDao().markAsSynced(call.id)
-                        Log.d(TAG, "   ✅ Uploaded & marked synced: ID=${call.id}, key=${call.uniqueCallId}")
-                    } else {
-                        Log.w(TAG, "   ❌ Upload failed for ID=${call.id}. Stopping batch to retry later.")
-                        break  // Stop on first failure to preserve order
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error during sync: ${e.message}", e)
-            } finally {
-                Log.d(TAG, "🛑 SyncManager finished. Mutex released.")
+            if (pendingCalls.isEmpty()) {
+                Log.d(TAG, "✅ No pending calls to upload.")
+                return
             }
+
+            val actualHrName = prefs.getHrName()
+
+            for (call in pendingCalls) {
+                // Clean Indian country code
+                var cleanNumber = call.phoneNumber.replace(" ", "").replace("-", "")
+                if (cleanNumber.startsWith("+91")) {
+                    cleanNumber = cleanNumber.substring(3)
+                } else if (cleanNumber.startsWith("91") && cleanNumber.length > 10) {
+                    cleanNumber = cleanNumber.substring(2)
+                }
+
+                // Look up contact name
+                val callerLabel = getContactName(call.phoneNumber) ?: cleanNumber
+
+                Log.d(TAG, "📤 Uploading call ID=${call.id}, key=${call.uniqueCallId}, label=$callerLabel")
+
+                val success = apiService.sendCallDataSync(
+                    scriptUrl = scriptUrl,
+                    hrName = actualHrName,
+                    phoneNumber = callerLabel,
+                    callType = call.callType,
+                    duration = call.duration,
+                    date = call.date,
+                    time = call.time,
+                    simName = call.simName
+                )
+
+                if (success) {
+                    db.callDao().markAsSynced(call.id)
+                    Log.d(TAG, "   ✅ Uploaded & marked synced: ID=${call.id}, key=${call.uniqueCallId}")
+                } else {
+                    Log.w(TAG, "   ❌ Upload failed for ID=${call.id}. Stopping batch to retry later.")
+                    break  // Stop on first failure to preserve order
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during sync: ${e.message}", e)
+        } finally {
+            syncMutex.unlock()
+            Log.d(TAG, "🛑 SyncManager finished. Mutex released.")
         }
     }
 
