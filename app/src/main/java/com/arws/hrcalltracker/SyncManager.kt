@@ -36,15 +36,24 @@ class SyncManager(private val context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val pendingCalls = db.callDao().getPendingCalls()
+                val actualHrName = prefs.getHrName()
 
                 for (call in pendingCalls) {
-                    // Look up contact name — if saved use name, else use the phone number
-                    val callerLabel = getContactName(call.phoneNumber) ?: call.phoneNumber
+                    // Remove Indian country code (+91 or 91) and any spaces/dashes
+                    var cleanNumber = call.phoneNumber.replace(" ", "").replace("-", "")
+                    if (cleanNumber.startsWith("+91")) {
+                        cleanNumber = cleanNumber.substring(3)
+                    } else if (cleanNumber.startsWith("91") && cleanNumber.length > 10) {
+                        cleanNumber = cleanNumber.substring(2)
+                    }
+
+                    // Look up contact name — if saved use name, else use the formatted phone number
+                    val callerLabel = getContactName(call.phoneNumber) ?: cleanNumber
 
                     val success = apiService.sendCallDataSync(
                         scriptUrl = scriptUrl,
-                        hrName = callerLabel,   // contact name OR phone number
-                        phoneNumber = call.phoneNumber,
+                        hrName = actualHrName,          // Always the HR's name
+                        phoneNumber = callerLabel,      // Contact Name OR 10-digit number
                         callType = call.callType,
                         duration = call.duration,
                         date = call.date,

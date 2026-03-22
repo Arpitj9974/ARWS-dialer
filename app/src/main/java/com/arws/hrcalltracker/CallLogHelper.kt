@@ -58,7 +58,7 @@ class CallLogHelper(private val context: Context) {
                 return CallInfo(
                     phoneNumber = number,
                     callType = mapCallType(typeCode),
-                    duration = duration,
+                    duration = formatDuration(duration),
                     dateMillis = dateMillis,
                     date = formatDateOnly(dateMillis),
                     time = formatTimeOnly(dateMillis),
@@ -107,7 +107,7 @@ class CallLogHelper(private val context: Context) {
                         CallInfo(
                             phoneNumber = number,
                             callType = mapCallType(typeCode),
-                            duration = duration,
+                            duration = formatDuration(duration),
                             dateMillis = dateMillis,
                             date = formatDateOnly(dateMillis),
                             time = formatTimeOnly(dateMillis),
@@ -142,5 +142,12 @@ class CallLogHelper(private val context: Context) {
     private fun formatTimeOnly(millis: Long): String {
         val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
         return sdf.format(Date(millis))
+    }
+
+    private fun formatDuration(secondsStr: String): String {
+        val totalSeconds = secondsStr.toLongOrNull() ?: 0L
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 }
