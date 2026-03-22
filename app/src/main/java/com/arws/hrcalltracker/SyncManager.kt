@@ -36,6 +36,7 @@ class SyncManager(private val context: Context) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val pendingCalls = db.callDao().getPendingCalls()
+                Log.d(TAG, "🚀 SyncManager starting API upload loop. Total pending calls queued for upload: ${pendingCalls.size}")
                 val actualHrName = prefs.getHrName()
 
                 for (call in pendingCalls) {

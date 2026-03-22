@@ -19,8 +19,8 @@ class ApiService {
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
-        .followRedirects(false)
-        .followSslRedirects(false)
+        // By default, OkHttp handles redirects (followRedirects = true). 
+        // Google Apps Script requires this native handling so a 302 POST redirect converts to a GET.
         .build()
 
     fun sendCallDataSync(
@@ -45,47 +45,21 @@ class ApiService {
             put("sim", simName)
         }
 
-        return postWithManualRedirect(scriptUrl, json.toString())
-    }
+        val requestBody = json.toString().toRequestBody(JSON_MEDIA_TYPE)
+        val request = Request.Builder()
+            .url(scriptUrl)
+            .post(requestBody)
+            .build()
 
-    private fun postWithManualRedirect(url: String, jsonBody: String): Boolean {
-        var currentUrl = url
-        var attempts = 0
-        val maxRedirects = 5
-
-        while (attempts < maxRedirects) {
-            val requestBody = jsonBody.toRequestBody(JSON_MEDIA_TYPE)
-            val request = Request.Builder()
-                .url(currentUrl)
-                .post(requestBody)
-                .build()
-
-            var nextUrl: String? = null
-            try {
-                client.newCall(request).execute().use { response ->
-                    val code = response.code
-                    val location = response.header("Location")
-                    val body = response.body?.string() ?: ""
-
-                    if (code in 300..399 && location != null) {
-                        nextUrl = location
-                    } else if (response.isSuccessful) {
-                        return body.contains("success")
-                    } else {
-                        return false
-                    }
-                }
-                
-                if (nextUrl != null) {
-                    currentUrl = nextUrl!!
-                    attempts++
-                } else {
-                    return false
-                }
-            } catch (e: Exception) {
-                return false
+        return try {
+            client.newCall(request).execute().use { response ->
+                val bodyStr = response.body?.string() ?: ""
+                Log.d(TAG, "API Response: Code=${response.code}, Body=$bodyStr")
+                response.isSuccessful && bodyStr.contains("success")
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception during sendCallDataSync: ", e)
+            false
         }
-        return false
     }
 }
