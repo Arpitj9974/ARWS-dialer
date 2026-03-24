@@ -17,6 +17,8 @@ class PrefsManager(context: Context) {
         private const val KEY_SETUP_COMPLETE = "setup_complete"
         private const val KEY_LAST_UPLOADED_TIMESTAMP = "last_uploaded_timestamp"
         private const val KEY_SCRIPT_URL = "script_url"
+        private const val KEY_LAST_PROCESSED_BOUNDARY = "last_processed_boundary"
+        private const val KEY_SYNC_RUNNING = "sync_running"
     }
 
     private val prefs: SharedPreferences =
@@ -67,12 +69,30 @@ class PrefsManager(context: Context) {
         return prefs.getBoolean(KEY_SETUP_COMPLETE, false)
     }
 
-    // --- Last Uploaded Call Timestamp (for duplicate prevention in later steps) ---
+    // --- Last Uploaded Call Timestamp (legacy, kept for backward compat) ---
     fun saveLastUploadedTimestamp(timestamp: Long) {
         prefs.edit().putLong(KEY_LAST_UPLOADED_TIMESTAMP, timestamp).apply()
     }
 
     fun getLastUploadedTimestamp(): Long {
         return prefs.getLong(KEY_LAST_UPLOADED_TIMESTAMP, 0L)
+    }
+
+    // --- Last Processed Boundary (clock-aligned epoch millis for scan windows) ---
+    fun saveLastProcessedBoundary(boundary: Long) {
+        prefs.edit().putLong(KEY_LAST_PROCESSED_BOUNDARY, boundary).commit()
+    }
+
+    fun getLastProcessedBoundary(): Long {
+        return prefs.getLong(KEY_LAST_PROCESSED_BOUNDARY, 0L)
+    }
+
+    // --- Sync Running Lock Flag (lightweight backup to Mutex) ---
+    fun setSyncRunning(running: Boolean) {
+        prefs.edit().putBoolean(KEY_SYNC_RUNNING, running).commit()
+    }
+
+    fun isSyncRunning(): Boolean {
+        return prefs.getBoolean(KEY_SYNC_RUNNING, false)
     }
 }

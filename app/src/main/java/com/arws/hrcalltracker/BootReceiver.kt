@@ -5,12 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.util.Log
+import androidx.work.*
+import java.util.concurrent.TimeUnit
 
 /**
  * BootReceiver — Listens for the BOOT_COMPLETED broadcast.
  *
- * Automatically starts the CallTrackingService when the phone finishes booting,
- * ensuring call tracking resumes even if the phone has been restarted.
+ * Automatically starts the CallTrackingService and schedules clock-aligned
+ * periodic sync work when the phone finishes booting.
  */
 class BootReceiver : BroadcastReceiver() {
 
@@ -34,9 +36,38 @@ class BootReceiver : BroadcastReceiver() {
                 } else {
                     context.startService(serviceIntent)
                 }
+
+                // Reset sync lock flag (may be stale from before reboot)
+                prefs.setSyncRunning(false)
+
+                // Schedule clock-aligned periodic sync work
+                scheduleClockAlignedSync(context)
             } else {
                 Log.d(TAG, "⏸️ Setup not complete — not starting service")
             }
         }
     }
+
+    private fun scheduleClockAlignedSync(context: Context) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val nowMillis = System.currentTimeMillis()
+        val initialDelayMs = PeriodicSyncWorker.getDelayToNextBoundary(nowMillis)
+
+        Log.d(TAG, "⏰ Scheduling clock-aligned sync. Next boundary in ${initialDelayMs / 1000}s")
+
+        val workRequest = PeriodicWorkRequestBuilder<PeriodicSyncWorker>(30, TimeUnit.MINUTES)
+            .setInitialDelay(initialDelayMs, TimeUnit.MILLISECONDS)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            PeriodicSyncWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.REPLACE,
+            workRequest
+        )
+    }
 }
+

@@ -15,6 +15,14 @@ class SheetSetupActivity : AppCompatActivity() {
 /**
  * GOOGLE APPS SCRIPT — Paste this into your Google Sheet's Apps Script editor.
  *
+ * ANTI-DUPLICATE DESIGN (Server-Side):
+ * - Checks if uniqueKey already exists before appending
+ * - Dedicated uniqueKey column (Column H) in the sheet
+ * - Returns structured response: inserted / skipped_duplicate / invalid_data
+ *
+ * SHEET COLUMNS (Row 1 headers):
+ * A: Phone Number | B: HR Name | C: Duration | D: Date | E: Time | F: Call Type | G: SIM | H: UniqueKey
+ *
  * HOW TO SET UP:
  * 1. Open your Google Sheet
  * 2. Go to Extensions → Apps Script
@@ -31,10 +39,11 @@ class SheetSetupActivity : AppCompatActivity() {
 // ⬇️ CHANGE THIS IF YOUR SHEET HAS A DIFFERENT NAME
 const R_A_TARGET_SHEET_NAME = "Sheet1";
 
+// Column index (1-based) where uniqueKey is stored
+const R_A_UNIQUE_KEY_COLUMN = 8; // Column H
+
 /**
  * MANDATORY WEB APP ENTRY POINT
- * Google Apps Script strictly requires this function to be named exactly doPost(e)
- * to intercept HTTP POST requests. 
  */
 function doPost(e) {
   return R_A_RecordCallData(e);
@@ -42,43 +51,90 @@ function doPost(e) {
 
 /**
  * UNIQUE R&A PROCESSING FUNCTION
- * Prefixed with R_A_ to ensure no naming collisions if you have other scripts.
  */
 function R_A_RecordCallData(e) {
   try {
-    // Open the spreadsheet and target the customizable sheet name
     var R_A_sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(R_A_TARGET_SHEET_NAME);
     if (!R_A_sheet) {
-      // Fallback to the first sheet if the specified name doesn't exist
       R_A_sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
     }
 
-    // Parse the incoming JSON data securely
+    // Set Header if empty, and hide the uniqueKey column (Rule 4 / UI polish)
+    if (R_A_sheet.getRange(1, R_A_UNIQUE_KEY_COLUMN).getValue() === "") {
+      R_A_sheet.getRange(1, R_A_UNIQUE_KEY_COLUMN).setValue("UniqueKey (Do Not Edit)");
+      R_A_sheet.hideColumns(R_A_UNIQUE_KEY_COLUMN);
+    }
+
     var R_A_data = JSON.parse(e.postData.contents);
 
-    // Append a new row with the call data in the exact requested order:
-    // number - HR name - Duration - Date - time - Call Type - SIM
+    // Validate incoming data
+    if (!R_A_data.phone_number || !R_A_data.date || !R_A_data.call_type) {
+      return ContentService.createTextOutput(
+        JSON.stringify({ "status": "error", "action": "invalid_data", "message": "Missing required fields" })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var R_A_uniqueKey = R_A_data.unique_key || "";
+
+    // Check if uniqueKey already exists in the sheet before appending
+    if (R_A_uniqueKey !== "") {
+      var R_A_isDuplicate = R_A_CheckDuplicate(R_A_sheet, R_A_uniqueKey);
+      if (R_A_isDuplicate) {
+        return ContentService.createTextOutput(
+          JSON.stringify({ "status": "success", "action": "skipped_duplicate", "message": "UniqueKey already exists in sheet" })
+        ).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // Append row with uniqueKey in Column H
     R_A_sheet.appendRow([
-      R_A_data.phone_number,     // Column A: number (or contact name)
-      R_A_data.hr_name,          // Column B: HR name
-      R_A_data.duration,         // Column C: Duration (already formatted as mm:ss by app)
-      R_A_data.date,             // Column D: Date
-      R_A_data.time,             // Column E: time
-      R_A_data.call_type,        // Column F: Call Type
-      R_A_data.sim               // Column G: SIM
+      R_A_data.phone_number,
+      R_A_data.hr_name,
+      R_A_data.duration,
+      R_A_data.date,
+      R_A_data.time,
+      R_A_data.call_type,
+      R_A_data.sim,
+      R_A_uniqueKey
     ]);
 
-    // Return success response formatted for Android App
     return ContentService.createTextOutput(
-      JSON.stringify({ "status": "success", "message": "Data recorded securely by R&A" })
+      JSON.stringify({ "status": "success", "action": "inserted", "message": "Data recorded by R&A" })
     ).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
-    // Return error response
     return ContentService.createTextOutput(
-      JSON.stringify({ "status": "error", "message": error.toString() })
+      JSON.stringify({ "status": "error", "action": "error", "message": error.toString() })
     ).setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+/**
+ * Check if uniqueKey already exists in Column H.
+ */
+function R_A_CheckDuplicate(sheet, uniqueKey) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2) return false;
+
+  var range = sheet.getRange(2, R_A_UNIQUE_KEY_COLUMN, lastRow - 1, 1);
+  var values = range.getValues();
+
+  for (var i = 0; i < values.length; i++) {
+    if (values[i][0] === uniqueKey) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Test function — run manually to verify setup.
+ */
+function testSetup() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(R_A_TARGET_SHEET_NAME);
+  if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+  sheet.appendRow(["0000000000", "TEST", "00:00", "01/01/2026", "00:00:00", "Test", "Test SIM", "TEST_KEY_DELETE_ME"]);
+  Logger.log("Test row added successfully!");
 }
     """.trimIndent()
 

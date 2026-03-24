@@ -178,6 +178,13 @@ class CallTrackingService : Service() {
             val callInfo = callLogHelper.getLatestCallLog()
 
             if (callInfo != null) {
+                // ── Rule 11: Skip ghost/invalid rows ──
+                if (callInfo.phoneNumber.isBlank() || callInfo.phoneNumber == "Unknown" ||
+                    callInfo.dateMillis <= 0 || callInfo.callType.isBlank()) {
+                    Log.d(TAG, "👻 GHOST ROW — invalid call log entry. Skipping.")
+                    return@postDelayed
+                }
+
                 // ── SIM FILTERING ──────────────────────
                 val prefs = PrefsManager(this)
                 val companySimId = prefs.getCompanySimId()
@@ -189,13 +196,16 @@ class CallTrackingService : Service() {
                     Log.d(TAG, "✅ COMPANY SIM CALL — Recording:")
                     Log.d(TAG, "   Number:   ${callInfo.phoneNumber}")
                     Log.d(TAG, "   Type:     ${callInfo.callType}")
-                    Log.d(TAG, "   Duration: ${callInfo.duration} sec")
+                    Log.d(TAG, "   Duration: ${callInfo.duration}")
                     Log.d(TAG, "   Date:     ${callInfo.date} ${callInfo.time}")
                     Log.d(TAG, "   SIM ID:   ${callInfo.subscriptionId}")
 
-                    // ── SAVE LOCALLY & SYNC ──────────────
-                    // Unique ID: number_dateMillis_duration_type_sim
-                    val uniqueCallId = "${callInfo.phoneNumber}_${callInfo.dateMillis}_${callInfo.duration}_${callInfo.callType}_${callInfo.subscriptionId}"
+                    // ── Rule 18: Normalize phone number before uniqueKey ──
+                    val normalizedNumber = SyncManager.normalizePhoneNumber(callInfo.phoneNumber)
+
+                    // ── Rule 6 & 7: Unique ID using exact dateMillis + normalized number ──
+                    val uniqueCallId = "${normalizedNumber}_${callInfo.dateMillis}_${callInfo.duration}_${callInfo.callType}_${callInfo.subscriptionId}"
+                    Log.d(TAG, "   🔑 uniqueKey=$uniqueCallId")
 
                     // Insert to database and sync using Coroutines
                     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
@@ -203,7 +213,7 @@ class CallTrackingService : Service() {
                         val exists = db.callDao().checkExists(uniqueCallId)
 
                         if (exists > 0) {
-                            Log.d(TAG, "⚠️ Duplicate call detected (ID: $uniqueCallId). Ignoring.")
+                            Log.d(TAG, "⚠️ Duplicate call detected (key: $uniqueCallId). Ignoring.")
                         } else {
                             val entity = com.arws.hrcalltracker.db.CallEntity(
                                 phoneNumber = callInfo.phoneNumber,
@@ -218,9 +228,13 @@ class CallTrackingService : Service() {
 
                             try {
                                 val insertedId = db.callDao().insertCall(entity)
-                                Log.d(TAG, "💾 Saved call locally to Room DB (Row ID: $insertedId)")
+                                if (insertedId != -1L) {
+                                    Log.d(TAG, "💾 Saved call locally to Room DB (Row ID: $insertedId)")
+                                } else {
+                                    Log.d(TAG, "⚠️ Call insert blocked by Room unique constraint: $uniqueCallId")
+                                }
                             } catch (e: Exception) {
-                                Log.d(TAG, "⚠️ Call insert blocked by Room DB constraint: $uniqueCallId")
+                                Log.d(TAG, "⚠️ Call insert error: $uniqueCallId — ${e.message}")
                             }
 
                             // Trigger sync after saving

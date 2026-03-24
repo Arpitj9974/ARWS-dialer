@@ -124,13 +124,22 @@ class DashboardActivity : AppCompatActivity() {
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
+        // Calculate delay until next :00 or :30 boundary
+        val nowMillis = System.currentTimeMillis()
+        val initialDelayMs = PeriodicSyncWorker.getDelayToNextBoundary(nowMillis)
+
+        android.util.Log.d("DashboardActivity",
+            "⏰ Next sync boundary in ${initialDelayMs / 1000}s (${initialDelayMs / 60000}min)")
+
         val workRequest = PeriodicWorkRequestBuilder<PeriodicSyncWorker>(30, TimeUnit.MINUTES)
+            .setInitialDelay(initialDelayMs, TimeUnit.MILLISECONDS)
             .setConstraints(constraints)
             .build()
 
+        // REPLACE so that re-opening the app recalculates alignment
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             PeriodicSyncWorker.WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.REPLACE,
             workRequest
         )
     }

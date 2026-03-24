@@ -124,6 +124,62 @@ class CallLogHelper(private val context: Context) {
         return newCalls
     }
 
+    /**
+     * Scans call log entries in a strict time range: (startExclusive, endInclusive].
+     * DATE > startExclusive AND DATE <= endInclusive
+     * This prevents boundary rows from being re-read in subsequent syncs.
+     */
+    fun scanCallsInRange(startExclusive: Long, endInclusive: Long): List<CallInfo> {
+        val calls = mutableListOf<CallInfo>()
+        var cursor: Cursor? = null
+        try {
+            cursor = context.contentResolver.query(
+                CallLog.Calls.CONTENT_URI,
+                arrayOf(
+                    CallLog.Calls.NUMBER,
+                    CallLog.Calls.TYPE,
+                    CallLog.Calls.DURATION,
+                    CallLog.Calls.DATE,
+                    "subscription_id"
+                ),
+                "${CallLog.Calls.DATE} > ? AND ${CallLog.Calls.DATE} <= ?",
+                arrayOf(startExclusive.toString(), endInclusive.toString()),
+                "${CallLog.Calls.DATE} ASC"
+            )
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    val number = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)) ?: "Unknown"
+                    val typeCode = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE))
+                    val duration = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.DURATION)) ?: "0"
+                    val dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls.DATE))
+                    val subscriptionId = try {
+                        cursor.getInt(cursor.getColumnIndexOrThrow("subscription_id"))
+                    } catch (e: Exception) {
+                        -1
+                    }
+
+                    calls.add(
+                        CallInfo(
+                            phoneNumber = number,
+                            callType = mapCallType(typeCode),
+                            duration = formatDuration(duration),
+                            dateMillis = dateMillis,
+                            date = formatDateOnly(dateMillis),
+                            time = formatTimeOnly(dateMillis),
+                            subscriptionId = subscriptionId
+                        )
+                    )
+                } while (cursor.moveToNext())
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error scanning calls in range", e)
+        } finally {
+            cursor?.close()
+        }
+        return calls
+    }
+
     private fun mapCallType(type: Int): String {
         return when (type) {
             CallLog.Calls.INCOMING_TYPE -> "Incoming"

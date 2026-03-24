@@ -101,22 +101,28 @@ class SetupActivity : AppCompatActivity() {
         
         Thread {
             val api = ApiService()
-            val success = api.sendCallDataSync(
+            val testUniqueKey = "TEST_${System.currentTimeMillis()}"
+            val result = api.sendCallDataSync(
                 scriptUrl = url,
                 hrName = if(hrName.isEmpty()) "Test HR" else hrName,
                 phoneNumber = "1234567890", 
                 callType = "Incoming",
-                duration = "45", // Fixed: Real-looking duration for testing
+                duration = "45",
                 date = "21/03/2026", 
                 time = "18:00:00",
-                simName = "SIM1"
+                simName = "SIM1",
+                uniqueKey = testUniqueKey
             )
             
             runOnUiThread {
-                if (success) {
-                    Toast.makeText(this@SetupActivity, "✅ Connection Successful! Check your sheet.", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this@SetupActivity, "❌ Connection Failed. Check URL and Deployment.", Toast.LENGTH_LONG).show()
+                when (result) {
+                    ApiService.UploadResult.INSERTED,
+                    ApiService.UploadResult.SKIPPED_DUPLICATE -> {
+                        Toast.makeText(this@SetupActivity, "✅ Connection Successful! Check your sheet.", Toast.LENGTH_LONG).show()
+                    }
+                    ApiService.UploadResult.ERROR -> {
+                        Toast.makeText(this@SetupActivity, "❌ Connection Failed. Check URL and Deployment.", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }.start()
