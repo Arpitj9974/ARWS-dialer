@@ -103,16 +103,18 @@ class SyncManager(private val context: Context) {
                 // Rule 18: Normalize phone number for display
                 val cleanNumber = normalizePhoneNumber(call.phoneNumber)
 
-                // Rule 17: Contact name for display only, uniqueKey uses raw phoneNumber
-                val callerLabel = getContactName(call.phoneNumber) ?: cleanNumber
+                // Retrieve contact name - prefer the one from CallLog (call.contactName), fallback to Contacts lookup
+                val currentContactName = getContactName(call.phoneNumber)
+                val finalContactName = if (call.contactName.isNotBlank()) call.contactName else (currentContactName ?: "")
 
-                Log.d(TAG, "📤 Uploading call ID=${call.id}, key=${call.uniqueCallId}, label=$callerLabel")
+                Log.d(TAG, "📤 Uploading call ID=${call.id}, key=${call.uniqueCallId}, name=$finalContactName")
 
                 // Rule 2: Send uniqueKey in payload
                 val result = apiService.sendCallDataSync(
                     scriptUrl = scriptUrl,
                     hrName = actualHrName,
-                    phoneNumber = callerLabel,
+                    phoneNumber = cleanNumber,
+                    contactName = finalContactName,
                     callType = call.callType,
                     duration = call.duration,
                     date = call.date,

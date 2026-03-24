@@ -21,7 +21,7 @@ class SheetSetupActivity : AppCompatActivity() {
  * - Returns structured response: inserted / skipped_duplicate / invalid_data
  *
  * SHEET COLUMNS (Row 1 headers):
- * A: Phone Number | B: HR Name | C: Duration | D: Date | E: Time | F: Call Type | G: SIM | H: UniqueKey
+ * A: Phone Number | B: Contact Name | C: HR Name | D: Duration | E: Date | F: Time | G: Call Type | H: SIM | I: UniqueKey
  *
  * HOW TO SET UP:
  * 1. Open your Google Sheet
@@ -40,7 +40,7 @@ class SheetSetupActivity : AppCompatActivity() {
 const R_A_TARGET_SHEET_NAME = "Sheet1";
 
 // Column index (1-based) where uniqueKey is stored
-const R_A_UNIQUE_KEY_COLUMN = 8; // Column H
+const R_A_UNIQUE_KEY_COLUMN = 9; // Column I
 
 /**
  * MANDATORY WEB APP ENTRY POINT
@@ -86,9 +86,10 @@ function R_A_RecordCallData(e) {
       }
     }
 
-    // Append row with uniqueKey in Column H
+    // Append row with uniqueKey in Column I
     R_A_sheet.appendRow([
       R_A_data.phone_number,
+      R_A_data.contact_name || "",
       R_A_data.hr_name,
       R_A_data.duration,
       R_A_data.date,
@@ -110,7 +111,7 @@ function R_A_RecordCallData(e) {
 }
 
 /**
- * Check if uniqueKey already exists in Column H.
+ * Check if uniqueKey already exists in Column I.
  */
 function R_A_CheckDuplicate(sheet, uniqueKey) {
   var lastRow = sheet.getLastRow();
@@ -133,7 +134,7 @@ function R_A_CheckDuplicate(sheet, uniqueKey) {
 function testSetup() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(R_A_TARGET_SHEET_NAME);
   if (!sheet) sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
-  sheet.appendRow(["0000000000", "TEST", "00:00", "01/01/2026", "00:00:00", "Test", "Test SIM", "TEST_KEY_DELETE_ME"]);
+  sheet.appendRow(["0000000000", "Test Name", "TEST", "00:00", "01/01/2026", "00:00:00", "Test", "Test SIM", "TEST_KEY_DELETE_ME"]);
   Logger.log("Test row added successfully!");
 }
     """.trimIndent()

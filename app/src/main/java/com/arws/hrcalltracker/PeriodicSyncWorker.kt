@@ -186,6 +186,7 @@ class PeriodicSyncWorker(
                 // Insert as pending
                 val entity = CallEntity(
                     phoneNumber = call.phoneNumber,  // Store raw for contact lookup later
+                    contactName = call.contactName,
                     callType = call.callType,
                     duration = call.duration,
                     date = call.date,

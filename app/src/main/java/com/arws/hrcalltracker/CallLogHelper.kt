@@ -18,6 +18,7 @@ class CallLogHelper(private val context: Context) {
 
     data class CallInfo(
         val phoneNumber: String,
+        val contactName: String,
         val callType: String,
         val duration: String,
         val dateMillis: Long,
@@ -33,6 +34,7 @@ class CallLogHelper(private val context: Context) {
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(
                     CallLog.Calls.NUMBER,
+                    CallLog.Calls.CACHED_NAME,
                     CallLog.Calls.TYPE,
                     CallLog.Calls.DURATION,
                     CallLog.Calls.DATE,
@@ -45,6 +47,7 @@ class CallLogHelper(private val context: Context) {
 
             if (cursor != null && cursor.moveToFirst()) {
                 val number = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)) ?: "Unknown"
+                val contactName = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)) ?: ""
                 val typeCode = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE))
                 val duration = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.DURATION)) ?: "0"
                 val dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls.DATE))
@@ -57,6 +60,7 @@ class CallLogHelper(private val context: Context) {
 
                 return CallInfo(
                     phoneNumber = number,
+                    contactName = contactName,
                     callType = mapCallType(typeCode),
                     duration = formatDuration(duration),
                     dateMillis = dateMillis,
@@ -81,6 +85,7 @@ class CallLogHelper(private val context: Context) {
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(
                     CallLog.Calls.NUMBER,
+                    CallLog.Calls.CACHED_NAME,
                     CallLog.Calls.TYPE,
                     CallLog.Calls.DURATION,
                     CallLog.Calls.DATE,
@@ -94,6 +99,7 @@ class CallLogHelper(private val context: Context) {
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     val number = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)) ?: "Unknown"
+                    val contactName = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)) ?: ""
                     val typeCode = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE))
                     val duration = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.DURATION)) ?: "0"
                     val dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls.DATE))
@@ -106,6 +112,7 @@ class CallLogHelper(private val context: Context) {
                     newCalls.add(
                         CallInfo(
                             phoneNumber = number,
+                            contactName = contactName,
                             callType = mapCallType(typeCode),
                             duration = formatDuration(duration),
                             dateMillis = dateMillis,
@@ -137,6 +144,7 @@ class CallLogHelper(private val context: Context) {
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(
                     CallLog.Calls.NUMBER,
+                    CallLog.Calls.CACHED_NAME,
                     CallLog.Calls.TYPE,
                     CallLog.Calls.DURATION,
                     CallLog.Calls.DATE,
@@ -150,6 +158,7 @@ class CallLogHelper(private val context: Context) {
             if (cursor != null && cursor.moveToFirst()) {
                 do {
                     val number = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.NUMBER)) ?: "Unknown"
+                    val contactName = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.CACHED_NAME)) ?: ""
                     val typeCode = cursor.getInt(cursor.getColumnIndexOrThrow(CallLog.Calls.TYPE))
                     val duration = cursor.getString(cursor.getColumnIndexOrThrow(CallLog.Calls.DURATION)) ?: "0"
                     val dateMillis = cursor.getLong(cursor.getColumnIndexOrThrow(CallLog.Calls.DATE))
@@ -162,6 +171,7 @@ class CallLogHelper(private val context: Context) {
                     calls.add(
                         CallInfo(
                             phoneNumber = number,
+                            contactName = contactName,
                             callType = mapCallType(typeCode),
                             duration = formatDuration(duration),
                             dateMillis = dateMillis,

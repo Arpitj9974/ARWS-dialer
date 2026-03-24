@@ -101,11 +101,14 @@ class SetupActivity : AppCompatActivity() {
         
         Thread {
             val api = ApiService()
-            val testUniqueKey = "TEST_${System.currentTimeMillis()}"
+            // Using a fixed key for the test so it only writes ONE row to the sheet,
+            // and subsequent tests get skipped as duplicates, preventing junk rows.
+            val testUniqueKey = "TEST_SETUP_CONNECTION_KEY"
             val result = api.sendCallDataSync(
                 scriptUrl = url,
                 hrName = if(hrName.isEmpty()) "Test HR" else hrName,
-                phoneNumber = "1234567890", 
+                phoneNumber = "1234567890",
+                contactName = "John Doe (Test)",
                 callType = "Incoming",
                 duration = "45",
                 date = "21/03/2026", 

@@ -217,6 +217,7 @@ class CallTrackingService : Service() {
                         } else {
                             val entity = com.arws.hrcalltracker.db.CallEntity(
                                 phoneNumber = callInfo.phoneNumber,
+                                contactName = callInfo.contactName,
                                 callType = callInfo.callType,
                                 duration = callInfo.duration,
                                 date = callInfo.date,

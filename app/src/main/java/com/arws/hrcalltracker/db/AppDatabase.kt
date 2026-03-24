@@ -8,7 +8,7 @@ import androidx.room.RoomDatabase
 /**
  * AppDatabase — Room Database instance for RAW.
  */
-@Database(entities = [CallEntity::class], version = 5, exportSchema = false)
+@Database(entities = [CallEntity::class], version = 6, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun callDao(): CallDao

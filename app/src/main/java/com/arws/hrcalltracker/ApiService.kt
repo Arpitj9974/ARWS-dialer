@@ -53,6 +53,7 @@ class ApiService {
         scriptUrl: String,
         hrName: String,
         phoneNumber: String,
+        contactName: String,
         callType: String,
         duration: String,
         date: String,
@@ -65,6 +66,7 @@ class ApiService {
         val json = JSONObject().apply {
             put("hr_name", hrName)
             put("phone_number", phoneNumber)
+            put("contact_name", contactName)
             put("call_type", callType)
             put("duration", duration)
             put("date", date)
