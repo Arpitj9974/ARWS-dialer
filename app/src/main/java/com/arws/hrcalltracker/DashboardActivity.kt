@@ -3,7 +3,6 @@ package com.arws.hrcalltracker
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
-import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -12,7 +11,6 @@ import androidx.lifecycle.Observer
 import androidx.work.*
 import com.arws.hrcalltracker.db.AppDatabase
 import com.google.android.material.button.MaterialButton
-import java.util.concurrent.TimeUnit
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -146,16 +144,23 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun runManualSync() {
         Toast.makeText(this, "Syncing Now...", Toast.LENGTH_SHORT).show()
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        
+
+        // ── FIX: Clear the stuck sync-running flag so the worker isn't skipped ──
+        prefs.setSyncRunning(false)
+
+        // No network constraint here — the worker checks internet internally.
+        // Removing the constraint ensures the job runs immediately instead of
+        // being held by WorkManager until network conditions are re-evaluated.
         val request = OneTimeWorkRequestBuilder<PeriodicSyncWorker>()
-            .setConstraints(constraints)
             .build()
-            
-        WorkManager.getInstance(this).enqueue(request)
-        
+
+        // Use REPLACE so repeated button taps don't stack redundant jobs
+        WorkManager.getInstance(this).enqueueUniqueWork(
+            "ManualSync",
+            androidx.work.ExistingWorkPolicy.REPLACE,
+            request
+        )
+
         WorkManager.getInstance(this).getWorkInfoByIdLiveData(request.id)
             .observe(this, Observer { info ->
                 if (info != null && info.state.isFinished) {
